@@ -1,38 +1,245 @@
-.App {
+body {
+  background-color: #3aafa9;
+  font-family: cursive;
+}
+.custom-btn:hover {
+  background-color: #000 !important;
+}
+.home-page {
   text-align: center;
+  padding: 200px 0px;
+  color: #fff;
+}
+.home-page h1 {
+  font-size: 140px;
+  margin-bottom: 90px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.home-page .custom-btn {
+  padding: 16px 60px;
+  background-color: rgba(0, 0, 0, 0.125);
+  color: #fff;
+  font-size: 30px;
+  transition: all 0.3s ease-in;
+  text-decoration: none;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+/* quiz style */
+
+.quiz-container {
+  height: 62%;
+  width: 100%;
+  max-width: 1000px;
+  text-align: center;
+  padding: 50px;
+  margin: 40px auto 30px auto;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  background-color: transparent;
+}
+.question-section h2 {
+  margin-bottom: 80px;
+  font-size: 50px;
+  font-weight: 600;
+  color: #fff;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.question-section {
+  margin-bottom: 20px;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.options-section {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.option-row {
+  width: 48%;
+  margin-bottom: 10px;
+}
+
+.option-label {
+  font-size: 40px;
+  font-weight: bold;
+  display: block;
+  width: 100%;
+  padding: 10px 20px;
+  margin: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.btn-group button {
+  margin: 0 20px 0 0;
+}
+
+.next-button,
+.previous-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, 1);
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.custom-checkbox {
+  display: inline-flex;
+  position: relative;
+  padding-left: 35px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  font-size: 35px;
+  user-select: none;
+  color: #fff;
+}
+
+.custom-checkbox input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkmark {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0;
+  height: 25px;
+  width: 25px;
+  background-color: #eee;
+  border-radius: 4px;
+}
+
+.custom-checkbox:hover input ~ .checkmark {
+  background-color: #ccc;
+}
+
+.custom-checkbox input:checked ~ .checkmark {
+  background-color: #2196f3;
+}
+
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+.custom-checkbox input:checked ~ .checkmark:after {
+  display: block;
+}
+
+.checkmark:after {
+  left: 9px;
+  top: 5px;
+  width: 7px;
+  height: 15px;
+  border: solid white;
+  border-width: 0 3px 3px 0;
+  transform: rotate(45deg);
+}
+.disable {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.quiz-tracker {
+  position: relative;
+}
+.exit-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  right: 30%;
+  top: 50%;
+}
+div:where(.swal2-container) div:where(.swal2-popup) {
+  background: #000 !important;
+  color: #fff !important;
+}
+
+/* Timer styles */
+.timer-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+  padding-top: 70px;
+}
+
+.timer {
+  font-size: 40px;
+  padding: 20px;
+  margin-bottom: 10px;
+  background: #000;
+  text-align: center;
+  color: #fff;
+  font-weight: 600;
+}
+
+.timer-controls button {
+  padding: 10px;
+  margin: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+/* result table design */
+.result-section {
+  padding-top: 70px;
+}
+
+.result-container {
+  margin: 20px;
+  padding: 20px;
+}
+.result-heading {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #ffffff;
+  font-size: 60px;
+  font-weight: 600;
+  margin-bottom: 80px;
+}
+.result-table {
+  min-width: 600px;
+  border-collapse: collapse;
+  margin: 0px auto;
+}
+
+.result-table th,
+.result-table td {
+  border: 1px solid #ddd;
+  text-align: center;
+  padding: 25px 8px;
+  background-color: hsla(180, 51.4%, 51.6%, 1);
+  color: #fff;
+  font-size: 30px;
+}
+
+.result-table th {
+  background-color: #000000;
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+.chart-container {
+  width: 600px;
+  height: 500px;
+  justify-content: center;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.chart-data-display {
+  font-size: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #fff;
+  padding-top: 20px;
 }
