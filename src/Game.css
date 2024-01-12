@@ -1,0 +1,26 @@
+body{overflow-y: hidden;background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTz2HEwOzxFKt__gyG_cb04P4O8EVvuJ9zcbQ&usqp=CAU');}
+.snake-game{position: relative;height: 100vh;}
+.game-board {overflow: hidden; width: 700px;height: 700px; background-color: #000;position: absolute;top: 50%;left: 50%;transform: translate(-50%,-50%);border-radius: 5px;}
+.snake-container {display: flex;align-items: center;}
+.snake-dot {width: 20px;height: 20px;background-color: green;border-radius: 50%;position: relative;}
+.snake-container {display: flex;}
+.snake-head {background-color: green;}
+.snake-eye {width: 4px;height: 4px;border-radius: 50%;background-color: white;position: absolute;top: 4px;}
+.game-score{text-align: center;font-size: 60px;color: #000;z-index: 999;position: relative;}
+.snake-eye-left {left: 4px;}
+.snake-eye-right {right: 4px;}
+div:where(.swal2-container) div:where(.swal2-popup){
+    background: #2778c4 !important;
+    color: #fff !important;
+}
+div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm{
+    background-color: #000 !important;
+}
+div:where(.swal2-container) img:where(.swal2-image){
+    margin: 0 !important;
+    border-radius: 5px;
+}
+div:where(.swal2-container) h2:where(.swal2-title) {
+    font-size: 2.875em !important;
+}
+  
