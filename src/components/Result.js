@@ -5,7 +5,6 @@ import 'chartjs-plugin-datalabels';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { usePDF } from 'react-to-pdf';
 
-
 const Result = () => {
   const { toPDF, targetRef } = usePDF({ filename: 'page.pdf' });
   const location = useLocation();
@@ -62,7 +61,6 @@ const Result = () => {
   };
 
 
-
   return (
     <section className='result-section '>
       <div className='container-fluid'>
@@ -74,6 +72,7 @@ const Result = () => {
         <div className='row' ref={targetRef}>
           <div className='col-md-6'>
             <div className="result-container">
+            <h2 className='mb-2 text-center'>Your Result</h2>
               <table className="result-table">
                 <tbody>
                   <tr>
@@ -98,6 +97,38 @@ const Result = () => {
                   </tr>
                 </tbody>
               </table>
+
+              <h2 className='py-2 text-center'>Grades Criteria</h2>
+              <table class=" result-table">
+                <thead>
+                  <tr>
+                    <th>Percentage Range</th>
+                    <th>Grade</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>90% and above</td>
+                    <td>A</td>
+                  </tr>
+                  <tr>
+                    <td>80% - 89%</td>
+                    <td>B</td>
+                  </tr>
+                  <tr>
+                    <td>70% - 79%</td>
+                    <td>C</td>
+                  </tr>
+                  <tr>
+                    <td>60% - 69%</td>
+                    <td>D</td>
+                  </tr>
+                  <tr>
+                    <td>Below 60%</td>
+                    <td>F</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
           <div className='col-md-6'>
@@ -112,10 +143,11 @@ const Result = () => {
               </div>
             </div>
           </div>
+
+
         </div>
       </div>
     </section>
-
   );
 }
 

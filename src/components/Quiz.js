@@ -1,4 +1,4 @@
-import React, { useState } from 'react'; // useState is a React hook for adding state to a component.
+import { useState } from 'react'; // useState is a React hook for adding state to a component.
 import { quizQuestions } from '../QuestionList'; // Importing a list of questions for the quiz.
 import TimerComponent from '../Timer'; // Importing a Timer component to be used in the quiz.
 import Options from './Options'; // Importing the Options component to display quiz options.
@@ -33,6 +33,7 @@ const Quiz = () => {
         setScore(prevScore => {
             const updatedScore = isCorrect ? prevScore + 1 : prevScore - 1; // Updates the score.
             return Math.max(updatedScore, 0); // Ensures score does not go below 0.
+            
         });
 
         if (currentQuestionIndex < quizQuestions.length - 1) { // Checks if there are more questions.
@@ -42,6 +43,7 @@ const Quiz = () => {
     };
 
     const handlePreviousClick = () => {
+        setNext(true);
         if (currentQuestionIndex > 0) {
             setCurrentQuestionIndex(prevIndex => prevIndex - 1);
             setHasAnswered(false);
@@ -103,7 +105,7 @@ const Quiz = () => {
                     <TimerComponent shouldStart={true} />
                     <div className="quiz-container position-relative">
                         <div className="question-section">
-                            <span className='d-flex justify-content-start text-light fw-bolder fs-2 position-absolute top-0 start-0 ms-3 mt-2 '>Question {currentQuestionIndex + 1}</span>
+                            <span className='d-flex justify-content-start text-light fw-bolder fs-2 position-absolute top-0 start-0 ms-3 mt-2'>Question {currentQuestionIndex + 1}</span>
 
                             <h2 className='pt-5'>{currentQuestion.question}</h2>
                         </div>
@@ -123,7 +125,7 @@ const Quiz = () => {
                         {isFirstQuestion ? null : (
                             <button className="previous-button" onClick={handlePreviousClick}>Previous</button>
                         )}
-                        <button className={`next-button ${!next ? "disable" : ""}`} onClick={handleNextClick} disabled={!next}>Next</button>
+                      {isLastQuestion ? null :  <button className={`next-button ${!next ? "disable" : ""}`} onClick={handleNextClick} disabled={!next}>Next</button>}
                         <button className={`next-button ${(isLastQuestion && hasLastAnswered) || selectedOptions[currentQuestionIndex] ? "disable " : ""}`} onClick={handleSkipClick} disabled={selectedOptions[currentQuestionIndex]}>Skip</button>
                         {(isLastQuestion && hasLastAnswered) && (
                             <button className="next-button" onClick={submit}>Submit</button>
