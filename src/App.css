@@ -1,38 +1,116 @@
-.App {
-  text-align: center;
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+#wrapper{
+  position: absolute;top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
 }
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+body{background-color: #7b7b7b;width: 100%;height: 100%;}
+.numeric-style{background-color: #607d8b !important;}
+.bg-danger{background-color: #cb4e4e;}
+.bg-danger.circle{background-color: #cb4e4e;border-radius: 50%;}
+.arathamatic-style{background-color: #ffa726;}
+.calculate-style{background-color: #336699;}
+.bg-danger.console{background-color: #cb4e4e;font-size: 16px;display: flex;align-items: center;justify-content: center;flex-wrap: wrap;}
+.d-flex{
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  flex-wrap: wrap;
 }
 
-.App-link {
-  color: #61dafb;
+.calc-body {
+  background-color: #dcdcdc;
+  padding: 15px;
+  border-radius: 15px;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.result input {
+  background-color: #b0bec5 !important;
+  pointer-events: none;
+  border: none;
+  width: 317px;
+  text-align-last: end;
+  font-size: 40px;
+  color: #000;
+  
+}
+
+#wrapper h1 {
+  font-family: 'Montserrat', sans-serif;
+  text-transform: uppercase;
+  font-weight: 200;
+  font-size: 25px;
+  margin-bottom: 30px;
+  letter-spacing: .25em;
+
+}
+
+#wrapper {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  min-width: 300px;
+}
+
+
+
+button.btn.btn-long {
+  width: 107px;
+}
+
+
+
+.btn {
+  width: 75px;
+  height: 75px;
+  border-radius: 5px;
+  margin: 5px;
+  text-align: center;
+  margin-left: -.3%;
+  font-family: 'Montserrat', sans-serif;
+  color: #fff;
+  border: none;
+  font-size: 40px;
+
+
+}
+
+
+
+footer {
+  /*	background-color: #eeeeee;
+*/
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: .2em;
+  font-size: 10px;
+  font-weight: 500;
+  padding-top: 20px;
+  width: 100%;
+  clear: both;
+}
+
+footer a {
+  color: #555555;
+  text-decoration: underline;
+}
+
+footer a:hover {
+  color: #F6DAC6;
+}
+
+.calc-body {
+  max-width: 317px;
+  margin: 0px auto;
 }
