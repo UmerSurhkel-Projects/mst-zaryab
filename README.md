@@ -2,7 +2,7 @@
 
 This is a simple quiz app built with React for creating and taking quizzes. Users can answer multiple-choice questions, see their score, and receive a grade at the end.
 
-![Screenshot](quiz-app-screenshot.png)
+![Screenshot](![Alt text](image.png))
 
 ## Features
 

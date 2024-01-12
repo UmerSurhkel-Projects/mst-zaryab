@@ -121,7 +121,7 @@ body {
 }
 
 .custom-checkbox input:checked ~ .checkmark {
-  background-color: #2196f3;
+  background-color: #000;
 }
 
 .checkmark:after {
