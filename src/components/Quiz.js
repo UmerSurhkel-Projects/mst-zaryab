@@ -4,7 +4,6 @@ import TimerComponent from '../Timer'; // Importing a Timer component to be used
 import Options from './Options'; // Importing the Options component to display quiz options.
 import { useNavigate } from 'react-router-dom'; // useNavigate is used for navigation between routes.
 
-// This is the Quiz component definition.
 const Quiz = () => {
     // Setting up state variables for the Quiz component.
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); // Tracks the index of the current question.
