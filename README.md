@@ -2,21 +2,9 @@
 
 A simple Snake game implemented using ReactJS.
 
-![Snake Game Screenshot](screenshot.png)
+![Snake Game Screenshot](![Alt text](image.png))
 
-## Table of Contents
 
-- [Demo](#demo)
-- [Features](#features)
-- [Getting Started](#getting-started)
-- [How to Play](#how-to-play)
-- [Customization](#customization)
-- [Contributing](#contributing)
-- [License](#license)
-
-## Demo
-
-You can play the game online here: [Snake Game Demo](https://your-demo-url.com)
 
 ## Features
 
