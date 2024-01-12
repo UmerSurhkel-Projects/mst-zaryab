@@ -8,14 +8,13 @@ import { useNavigate } from 'react-router-dom'; // useNavigate is used for navig
 const Quiz = () => {
     // Setting up state variables for the Quiz component.
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); // Tracks the index of the current question.
-    const [selectedOptions, setSelectedOptions] = useState(new Array(quizQuestions.length).fill(null)); // Stores the options selected by the user for each question.
+    const [selectedOptions, setSelectedOptions] = useState(new Array(quizQuestions.length).fill(null)); // Stores the options selected by the user.
     const [score, setScore] = useState(0); // Keeps track of the user's score.
     const [hasAnswered, setHasAnswered] = useState(false); // Indicates whether the user has answered the current question.
     const [hasLastAnswered, setHasLastAnswered] = useState(false);
     const [skippedCount, setSkippedCount] = useState(0); // New state variable for counting skipped questions.
-    const navigate = useNavigate(); // Enables programmatic navigation.
-
     const [next, setNext] = useState(false);
+    const navigate = useNavigate(); // Enables programmatic navigation.
 
     // Function to handle option selection for the current question.
     const handleOptionChange = (option) => {
@@ -52,7 +51,6 @@ const Quiz = () => {
 
     // Function to handle the 'Skip' button click.
     const handleSkipClick = () => {
-
         setSkippedCount(prevCount => prevCount + 1);
         if (currentQuestionIndex < 9)
             setCurrentQuestionIndex(prevIndex => prevIndex + 1);
@@ -89,13 +87,13 @@ const Quiz = () => {
 
         // Navigates to the Result component with the results.
         navigate('/result', { state: { correct: correctAnswers, wrong: wrongAnswers, skipped, totalScore, grade } });
-
     };
 
     // Getting the current question from the quiz questions.
     const currentQuestion = quizQuestions[currentQuestionIndex];
     // Checks if the current question is the last one.
     const isLastQuestion = currentQuestionIndex === quizQuestions.length - 1;
+    // Checks if the current question is the First one.
     const isFirstQuestion = currentQuestionIndex === 0;
 
     // JSX for rendering the Quiz component.
