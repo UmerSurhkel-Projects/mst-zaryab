@@ -1,3 +1,4 @@
+// actions => auth.js file
 import { ActionTypes } from '../types'
 import { ENV } from '../config/config';
 const {baseUrl} = ENV;

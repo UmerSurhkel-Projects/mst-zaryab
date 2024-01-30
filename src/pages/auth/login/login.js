@@ -14,25 +14,30 @@ const initialState = {
 };
 
 const loginReducer = (state, action) => {
-	switch (action.type) {
-		case ActionTypes.LOGIN_START:
-			return { ...state, loading: true, error: null };
-		case ActionTypes.LOGIN_SUCCESS:
-			localStorage.setItem('accessToken', action.payload.accessToken);
-			return {
-				...state,
-				loading: false,
-				user: action.payload.userData,
-				accessToken: action.payload.accessToken
-			};
-		case ActionTypes.LOGIN_FAIL:
-			return { ...state, loading: false, error: action.payload };
-		default:
-			return state;
-	}
+    switch (action.type) {
+        case ActionTypes.LOGIN_START:
+            return { ...state, loading: true, error: null };
+        case ActionTypes.LOGIN_SUCCESS:
+            // Destructure the user data to separate the password and the rest of the data
+            const { password, ...userDataWithoutPassword } = action.payload.data;
+            localStorage.setItem('accessToken', action.payload.accessToken);
+            localStorage.setItem('user', JSON.stringify(userDataWithoutPassword));
+
+            return {
+                ...state,
+                loading: false,
+                user: userDataWithoutPassword, // Store user data without password in the state
+                accessToken: action.payload.accessToken
+            };
+        case ActionTypes.LOGIN_FAIL:
+            return { ...state, loading: false, error: action.payload };
+        default:
+            return state;
+    }
 };
 
-const Login = () => {
+
+const Login = ({ setUserData }) => {
 	const [state, dispatch] = useReducer(loginReducer, initialState);
 	const [formData, setFormData] = useState({
 		email: '',
@@ -42,12 +47,12 @@ const Login = () => {
 
 	useEffect(() => {
 		if (state.accessToken) {
-			console.log('Navigating to /dashboard');
+			// send data from here to parent comp.
+			const { user } = state;
+			setUserData(user);
 			navigate('/dashboard');
 		}
 	}, [state.accessToken, navigate]);
-
-
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;

@@ -78,6 +78,7 @@ textarea.form-control{height:150px;resize:none;}
 .dark-mode .pagination .page-link{background:rgba(255,255,255,1);}
 .dark-mode .pagination .page-link:hover{background:#1568ba;color:#fff;}
 .no-record-found{background:#1568ba;color:#fff;}
+
 @media(max-width:991px){
     .table.theme-table.notes-table{width:696px;}
 }

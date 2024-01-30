@@ -1,5 +1,6 @@
+import { AuthContext } from '../../App.js'
 import { Container, Row, Col, Form, FormGroup } from "react-bootstrap";
-import { useReducer, useState, useEffect } from "react";
+import { useReducer, useState, useEffect, useContext } from "react";
 import { Link, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAnglesLeft } from "@fortawesome/free-solid-svg-icons";
@@ -57,7 +58,8 @@ const NoteManager = () => {
     const { noteId } = useParams();
     const [mode, setMode] = useState(isEditMode ? NoteMode.EDIT : (isViewMode ? NoteMode.VIEW : NoteMode.CREATE));
     const [formData, setFormData] = useState({ title: "", description: "" });
-
+    // const currentUser = useContext(AuthContext);
+  
     useEffect(() => {
         if (noteId && isViewMode || noteId && isEditMode) {
             viewNotesAction(noteId)(dispatch);
