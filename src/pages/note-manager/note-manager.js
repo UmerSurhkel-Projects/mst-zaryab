@@ -1,13 +1,13 @@
 import { AuthContext } from '../../App.js'
 import { Container, Row, Col, Form, FormGroup } from "react-bootstrap";
-import { useReducer, useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Link, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAnglesLeft } from "@fortawesome/free-solid-svg-icons";
 import Header from "../../components/header/header";
-import { createNoteAction, viewNotesAction, editNotesAction } from "../../actions/notes";
+import { useCreateNoteMutation, useViewNoteQuery, useEditNoteMutation } from '../../api/notesApi.js';
+
 import { useLocation } from "react-router-dom";
-import { ActionTypes } from "../../types";
 import { toast, ToastContainer } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 
@@ -17,65 +17,38 @@ const NoteMode = {
     VIEW: 2,
     EDIT: 3
 };
-// Initial state for the reducer
-const initialState = {
-    loading: false,
-    error: null,
-    success: false,
-    note: null
-};
-// Reducer function
-const notesReducer = (state, action) => {
-    switch (action.type) {
-        case ActionTypes.CREATE_NOTE_REQUEST:
-            return { ...state, loading: true, error: null, success: false };
-        case ActionTypes.CREATE_NOTE_SUCCESS:
-            return { ...state, loading: false, error: null, success: true };
-        case ActionTypes.CREATE_NOTE_FAILURE:
-            return { ...state, loading: false, error: action.error, success: false };
-        case ActionTypes.VIEW_NOTE_REQUEST:
-            return { ...state, loading: true, error: null, note: null };
-        case ActionTypes.VIEW_NOTE_SUCCESS:
-            return { ...state, loading: false, note: action.payload, error: null, success: true };
-        case ActionTypes.VIEW_NOTE_FAILURE:
-            return { ...state, loading: false, error: action.payload, note: null };
-        case ActionTypes.EDIT_NOTE_REQUEST:
-            return { ...state, loading: true, error: null, note: null };
-        case ActionTypes.EDIT_NOTE_SUCCESS:
-            return { ...state, loading: false, note: action.payload, error: null, success: true };
-        case ActionTypes.EDIT_NOTE_FAILURE:
-            return { ...state, loading: false, error: action.payload, note: null };
-        default:
-            return state;
-    }
-};
 
 const NoteManager = () => {
-    const [state, dispatch] = useReducer(notesReducer, initialState);
+    const { noteId } = useParams(); // Move this line to the top
+
     const location = useLocation();
     const isEditMode = location.pathname.includes("/edit/");
     const isViewMode = location.pathname.includes("/view/");
-    const { noteId } = useParams();
     const [mode, setMode] = useState(isEditMode ? NoteMode.EDIT : (isViewMode ? NoteMode.VIEW : NoteMode.CREATE));
+    const [createNote, { isLoading: isCreating }] = useCreateNoteMutation();
+    const { data: noteData, isLoading: isViewing } = useViewNoteQuery(noteId, {
+        skip: mode !== NoteMode.VIEW && mode !== NoteMode.EDIT
+    });
+
+    const [editNote, { isLoading: isEditing }] = useEditNoteMutation();
     const [formData, setFormData] = useState({ title: "", description: "" });
     // const currentUser = useContext(AuthContext);
-  
-    useEffect(() => {
-        if (noteId && isViewMode || noteId && isEditMode) {
-            viewNotesAction(noteId)(dispatch);
-        }
-    }, [noteId, dispatch, isViewMode]);
+
 
     useEffect(() => {
-        if (noteId && isEditMode) {
-            if (state.note) {
+        if (noteId && isEditMode && noteData) {
+            console.log("noteData in edit mode:", noteData);
+            if (noteData) {
+                console.log("Setting formData in edit mode");
                 setFormData({
-                    title: state.note.title,
-                    description: state.note.description
+                    title: noteData.note.title || '',
+                    description: noteData.note.description || ''
                 });
             }
         }
-    }, [noteId, state.note, isEditMode]);
+    }, [noteId, noteData, isEditMode]);
+
+
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -84,16 +57,21 @@ const NoteManager = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (isCreating || isEditing) return; // Prevent double submission
+
         try {
             if (mode === NoteMode.CREATE) {
-                await createNoteAction(formData)(dispatch);
-            }
-            if (mode === NoteMode.EDIT) {
-                await editNotesAction(noteId, formData)(dispatch);
+                await createNote(formData).unwrap();
+                toast.success("Note created successfully!");
+            }else if (mode === NoteMode.EDIT) {
+                // The unwrap() method is used in Redux Toolkit Query (RTK Query)
+                //  to extract the result data from a Promise returned by an API mutation.
+                await editNote({ noteId, ...formData }).unwrap();
+                toast.success("Note updated successfully!");
             }
         } catch (error) {
             console.error("Error:", error);
-            toast.error("An error occurred!");
+            toast.error(`An error occurred: ${error.message || 'An unknown error occurred'}`);
         }
     };
 
@@ -117,7 +95,7 @@ const NoteManager = () => {
                                             type="text"
                                             placeholder="Title"
                                             name="title"
-                                            value={mode !== NoteMode.VIEW ? formData.title : (state.note ? state.note.title : '')}
+                                            value={mode !== NoteMode.VIEW ? formData.title : (noteData && noteData.note ? noteData.note.title : '')}
                                             onChange={handleInputChange}
                                             disabled={mode === NoteMode.VIEW}
                                         />
@@ -129,7 +107,7 @@ const NoteManager = () => {
                                             className="form-control"
                                             placeholder="Description"
                                             name="description"
-                                            value={mode !== NoteMode.VIEW ? formData.description : (state.note ? state.note.description : '')}
+                                            value={mode !== NoteMode.VIEW ? formData.description : (noteData && noteData.note ? noteData.note.description : '')}
                                             onChange={handleInputChange}
                                             disabled={mode === NoteMode.VIEW}
                                         />

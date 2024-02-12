@@ -1,69 +1,47 @@
-import { useState, useReducer, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Images } from '../../../assets/assets';
 import { FormGroup } from 'react-bootstrap';
-import { ActionTypes } from '../../../types';
-import { loginAction } from '../../../actions/auth';
-import { useNavigate } from "react-router-dom";
-import '../auth.css';
-
-const initialState = {
-	loading: null,
-	error: null,
-	user: null,
-};
-
-const loginReducer = (state, action) => {
-    switch (action.type) {
-        case ActionTypes.LOGIN_START:
-            return { ...state, loading: true, error: null };
-        case ActionTypes.LOGIN_SUCCESS:
-            // Destructure the user data to separate the password and the rest of the data
-            const { password, ...userDataWithoutPassword } = action.payload.data;
-            localStorage.setItem('accessToken', action.payload.accessToken);
-            localStorage.setItem('user', JSON.stringify(userDataWithoutPassword));
-
-            return {
-                ...state,
-                loading: false,
-                user: userDataWithoutPassword, // Store user data without password in the state
-                accessToken: action.payload.accessToken
-            };
-        case ActionTypes.LOGIN_FAIL:
-            return { ...state, loading: false, error: action.payload };
-        default:
-            return state;
-    }
-};
-
+import { useNavigate } from 'react-router-dom';
+import { useLoginMutation } from '../../../api/authApi';
+import '../../auth/auth.css';
 
 const Login = ({ setUserData }) => {
-	const [state, dispatch] = useReducer(loginReducer, initialState);
-	const [formData, setFormData] = useState({
-		email: '',
-		password: ''
-	});
+	const [formData, setFormData] = useState({ email: '', password: '' });
+	const [login, { isLoading, isError, data, error }] = useLoginMutation();
 	const navigate = useNavigate();
 
 	useEffect(() => {
-		if (state.accessToken) {
-			// send data from here to parent comp.
-			const { user } = state;
-			setUserData(user);
-			navigate('/dashboard');
+		if (data && data.success) { // Check if the API call was successful
+			const { accessToken, data: userData } = data;
+
+			// It's good to check if userData and accessToken are not undefined
+			if (userData && accessToken) {
+				const { password, ...userDataWithoutPassword } = userData; // Assuming you want to exclude the password
+				localStorage.setItem('accessToken', accessToken);
+				localStorage.setItem('user', JSON.stringify(userDataWithoutPassword));
+				setUserData(userDataWithoutPassword); // If you want to lift the state up to a parent component
+				navigate('/dashboard');
+			}
+		} else if (isError) {
+			console.error('Login failed:', error);
 		}
-	}, [state.accessToken, navigate]);
+	}, [data, isError, navigate]);
+
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
 		setFormData({ ...formData, [name]: value });
 	};
 
-	const handleSubmit = (e) => {
+	const handleSubmit = async (e) => {
 		e.preventDefault();
-		loginAction(formData)(dispatch);
+		try {
+			await login(formData); // RTK Query API call
+		} catch (apiError) {
+			// Handled by RTK Query's isError state
+		}
 	};
-
 
 	return (
 		<div className="auth-outer d-flex justify-content-center align-items-center flex-column">
@@ -93,7 +71,7 @@ const Login = ({ setUserData }) => {
 						</p>
 					</div>
 					{/* {state.loading && <p>Loading...</p>}
-					{state.error && <p>Error: {state.error}</p>} */}
+				{state.error && <p>Error: {state.error}</p>} */}
 				</form>
 			</div>
 		</div>

@@ -1,65 +1,51 @@
-import React, { useReducer, useState } from 'react';
+import React, { useState } from 'react';
 import { FormGroup } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { Images } from '../../../assets/assets';
-import { ActionTypes } from '../../../types'
-import { registrationAction } from '../../../actions/auth';
-
-// Initial state
-const initialState = {
-	loading: false,
-	error: null,
-	user: null,
-};
-
-// Reducer function
-const registrationReducer = (state, action) => {
-	switch (action.type) {
-		case ActionTypes.REGISTER_START:
-			return { ...state, loading: true, error: null };
-		case ActionTypes.REGISTER_SUCCESS:
-			return { ...state, loading: false, user: action.payload };
-		case ActionTypes.REGISTER_FAIL:
-			return { ...state, loading: false, error: action.payload };
-		default:
-			return state;
-	}
-};
-
+import { useRegisterMutation } from '../../../api/authApi';
 
 const Register = () => {
-	const [state, dispatch] = useReducer(registrationReducer, initialState);
+	const [register, { isLoading, isError, data, error: apiError }] = useRegisterMutation();
 	const [formData, setFormData] = useState({
 		name: '',
 		email: '',
 		password: '',
-		confirmPassword: '',
 		agreeTerms: false
 	});
+	const [formError, setFormError] = useState(''); // Local state for form validation errors
 
 	const handleChange = (e) => {
 		const { name, value, type, checked } = e.target;
 		setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
+		setFormError(''); // Reset form error when user changes input
 	};
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
+		setFormError(''); // Reset form error on new submission
 
 		// Basic form validation
 		if (formData.password !== formData.confirmPassword) {
-			dispatch({ type: ActionTypes.REGISTER_FAIL, payload: "Passwords do not match." });
+			setFormError("Passwords do not match.");
 			return;
 		}
 
 		if (!formData.agreeTerms) {
-			dispatch({ type: ActionTypes.REGISTER_FAIL, payload: "You must agree to the terms and conditions." });
+			setFormError("You must agree to the terms and conditions.");
 			return;
 		}
 
-		// Perform registration
-		registrationAction(formData, dispatch);
-	};
+		// Prepare payload for the API (exclude confirmPassword)
+		const payload = {
+			name: formData.name,
+			email: formData.email,
+			password: formData.password,
+			agreeTerms: formData.agreeTerms
+		};
 
+		// Perform registration
+		register(payload);
+	};
 
 	return (
 		<div className="auth-outer d-flex justify-content-center align-items-center flex-column">
@@ -90,12 +76,15 @@ const Register = () => {
 							<span className="checkmark"></span>
 						</label>
 					</FormGroup>
+
+					{isLoading && <p>Loading...</p>} {/* Loading indicator */}
+					{!isLoading && isError && <div className="alert alert-danger">{apiError?.data?.message || 'Registration failed'}</div>}
+					{!isLoading && !isError && data && <div className="alert alert-success">Registration successful!</div>}
+					{formError && <div className="alert alert-danger">{formError}</div>} {/* Local form validation error */}
+
 					<FormGroup className="mb-3">
 						<button type="submit" className="btn btn-solid transition">Register</button>
 					</FormGroup>
-					{state.loading && <p>Loading...</p>}
-					{state.error && <p>Error: {state.error}</p>}
-					{state.user && <p>Registered Successfully! Welcome, {state.user.name}</p>}
 					<div className="d-flex justify-content-center">
 						<p>
 							Already have an account?{" "}

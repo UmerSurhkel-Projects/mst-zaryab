@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Container, Table } from "react-bootstrap";
 import Select from "react-select";
@@ -6,8 +6,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faPen, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import Header from "../../components/header/header";
 import { optionsArray } from "../../config/config";
-import { ActionTypes } from "../../types";
-import { listNotesAction, deleteNoteAction, deleteSelectedNotesAction } from "../../actions/notes";
 import Pagination from 'rc-pagination';
 import localeInfo from 'rc-pagination/lib/locale/en_US';
 import Swal from "sweetalert2";
@@ -16,53 +14,37 @@ import Loader from "../../components/loader/Loader";
 import "react-toastify/dist/ReactToastify.css";
 import 'rc-pagination/assets/index.css';
 
-const initialState = {
-	notes: [],
-	loading: true,
-	error: null,
-};
-const notesListReducer = (state, action) => {
-	switch (action.type) {
-		case ActionTypes.LIST_NOTES_REQUEST:
-			return {
-				...state,
-				loading: true,
-				error: null,
-			};
-		case ActionTypes.LIST_NOTES_SUCCESS:
-			const { notes, total } = action.payload;
-			return {
-				...state,
-				notes,
-				total,
-				loading: false,
-			};
-		case ActionTypes.LIST_NOTES_FAILURE:
-			return {
-				...state,
-				loading: false,
-				error: action.payload,
-			};
-		default:
-			return state;
-	}
-};
+// Import the RTK Query hooks
+import {
+	useListNotesQuery,
+	useDeleteNoteMutation,
+	useDeleteSelectedNotesMutation
+} from "../../api/notesApi";
 
 const Dashboard = () => {
-	const [state, dispatch] = useReducer(notesListReducer, initialState);
 	const [selectedNotes, setSelectedNotes] = useState([]);
-	const [hasDeleted, setHasDeleted] = useState(false);
 	const [limit, setLimit] = useState(optionsArray[0].value);
 	const [pagination, setPagination] = useState({ page: 1, total: 1 });
+	const [hasDeleted, setHasDeleted] = useState(false);
 
+	// RTK Query hooks for fetching notes, deleting a note, and deleting selected notes
+	const { data, error, isLoading } = useListNotesQuery({ page: pagination.page, limit });
+	const [deleteNote] = useDeleteNoteMutation();
+	const [deleteSelectedNotes] = useDeleteSelectedNotesMutation();
+
+	// Effect for handling data changes (e.g., when notes are fetched)
 	useEffect(() => {
-		listNotesAction(dispatch, pagination.page, limit);
-	}, [dispatch, pagination.page, limit]);
+		if (data) {
+			setPagination(prevState => ({ ...prevState, total: data.total }));
+		}
+	}, [data]);
+	
 
-	const deleteNotes = (noteId) => {
-		deleteNoteAction(noteId, pagination.page, limit)(dispatch);
-		setHasDeleted(true);
+
+	const handlePageChange = (page) => {
+		setPagination(prevState => ({ ...prevState, page }));
 	};
+	
 
 	useEffect(() => {
 		if (hasDeleted) {
@@ -72,57 +54,61 @@ const Dashboard = () => {
 		}
 	}, [hasDeleted])
 
-	const handlePageChange = (page) => {
-		console.log("Changing to page:", page);
-		setPagination({ ...pagination, page });
-		listNotesAction(dispatch, pagination.page, limit);
-	};
-
 	const handleCheckboxChange = (noteId, isChecked) => {
 		if (isChecked) {
 			setSelectedNotes([...selectedNotes, noteId]);
 		} else {
 			setSelectedNotes(selectedNotes.filter(id => id !== noteId));
 		}
-		console.log(isChecked, noteId, "checkbox is checked");
 	};
 
 	const selectAllNotes = () => {
-		if (selectedNotes.length === state.notes.length) {
-			// All notes are currently selected, so clear the selection
+		if (selectedNotes.length === data.notes.length) {
 			setSelectedNotes([]);
 		} else {
-			// Not all notes are selected, so select all
-			const allNoteIds = state.notes.map(note => note._id);
+			const allNoteIds = data.notes.map(note => note._id);
 			setSelectedNotes(allNoteIds);
 		}
 	};
 
-	const deleteAllNotes = () => {
+	const deleteNoteHandler = async (noteId) => {
+		try {
+			await deleteNote(noteId).unwrap();
+			toast.success('Note deleted successfully!');
+		} catch (error) {
+			const errorMessage = error.data?.error || 'Unknown error';
+			toast.error(`Error deleting the note: ${errorMessage}`);
+		}
+	};
+
+
+	const deleteAllNotes = async () => {
 		Swal.fire({
 			title: "Do you want to delete all the selected notes?",
 			showCancelButton: true,
 			confirmButtonText: "Delete",
 		}).then(async (result) => {
 			if (result.isConfirmed) {
-				await deleteSelectedNotesAction(selectedNotes, pagination.page, limit)(dispatch);
-				listNotesAction(dispatch, pagination.page, limit);
+				try {
+					await deleteSelectedNotes(selectedNotes).unwrap();
+					setSelectedNotes([]);
+					toast.success('Selected notes deleted successfully!');
+				} catch (error) {
+					const errorMessage = error.data?.error || 'Unknown error';
+					toast.error(`Error deleting selected notes: ${errorMessage}`);
+				}
 			}
 		});
 	};
 
 	const limitHandler = (selectedOption) => {
-		console.log('selectedOption: ', selectedOption.value)
 		setLimit(selectedOption.value);
-		listNotesAction(dispatch, pagination.page, limit);
-
-
-	}
+	};
 
 	return (
 		<>
 			<Header />
-			{state.loading && <Loader />}
+			{isLoading && <Loader />}
 			<main id="main">
 				<Container>
 					<ToastContainer />
@@ -152,7 +138,7 @@ const Dashboard = () => {
 									<th>
 										<label className="right-label-checkbox">
 											<input type="checkbox"
-												checked={selectedNotes.length === state.notes.length}
+												checked={selectedNotes.length === data?.notes?.length}
 												onChange={selectAllNotes}
 											/>
 											<span className="checkmark"></span>
@@ -165,7 +151,7 @@ const Dashboard = () => {
 								</tr>
 							</thead>
 							<tbody>
-								{Array.isArray(state.notes) && state.notes.map((note, index) => (
+								{Array.isArray(data?.notes) && data.notes.map((note, index) => (
 									<tr key={note._id || index}>
 										<td>
 											<label className="right-label-checkbox">
@@ -193,7 +179,7 @@ const Dashboard = () => {
 													</Link>
 												</li>
 												<li className="cursor-pointer" data-tooltip-id="my-tooltip" data-tooltip-content="Delete">
-													<span className="d-flex justify-content-center align-items-center" onClick={() => deleteNotes(note._id)}>
+													<span className="d-flex justify-content-center align-items-center" onClick={() => deleteNoteHandler(note._id)}>
 														<FontAwesomeIcon icon={faTrash} />
 													</span>
 												</li>
@@ -204,18 +190,19 @@ const Dashboard = () => {
 							</tbody>
 						</Table>
 					</div>
-					{
-						state.total && limit &&
+					{pagination.total && limit &&
 						<Pagination
 							className='m-3 pagination d-flex justify-content-center'
 							defaultCurrent={1}
-							pageSize={limit}
+							pageSize={limit} // items per page
 							current={pagination.page}
-							total={state.total * limit} // total notes
+							total={pagination.total*limit} // total number of items or pages
 							onChange={handlePageChange}
 							locale={localeInfo}
 						/>
+
 					}
+
 				</Container>
 			</main>
 		</>
