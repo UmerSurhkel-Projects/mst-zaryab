@@ -6,7 +6,7 @@ import Register from './pages/auth/register/Register';
 import './App.css'
 import Login from './pages/auth/login/Login';
 
-function App() {
+const App = () => {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
