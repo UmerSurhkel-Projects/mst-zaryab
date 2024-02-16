@@ -12,7 +12,7 @@ const Main = () => {
             <div className="sidebar-group left-sidebar chat_sidebar">
                 <div id="chats" className="left-sidebar-wrap sidebar active slimscroll">
                     <div className="slimscroll">
-                        <div className="left-chat-title d-flex justify-content-between align-items-center">
+                        {/* <div className="left-chat-title d-flex justify-content-between align-items-center">
                             <div className="chat-title">
                                 <h4>CHATS</h4>
                             </div>
@@ -22,8 +22,10 @@ const Main = () => {
                                     <li><Link to="#" data-bs-toggle="modal" data-bs-target="#add-user"><FontAwesomeIcon icon={faPlus} /></Link></li>
                                 </ul>
                             </div>
-                        </div>
+                        </div> */}
+                        <div className='mt-3'>
                         <Search />
+                        </div>
                         <TopUser />
                         <User />
                     </div>

@@ -4,15 +4,17 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faCaretLeft } from "@fortawesome/free-solid-svg-icons"
 import { Formik, Field, Form, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
+import { useRegisterMutation } from "../../../api/AuthApi";
+import Swal from 'sweetalert2';
 
 const Register = () => {
+    const [register, { isLoading, isError, data, error: apiError }] = useRegisterMutation();
     const initialValues = {
         firstName: '',
         lastName: '',
         email: '',
         password: '',
         confirmPassword: '',
-        acceptTerms: false,
     };
 
     const validationSchema = Yup.object().shape({
@@ -21,12 +23,27 @@ const Register = () => {
         email: Yup.string().email('Email is invalid').required('Email is required'),
         password: Yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
         confirmPassword: Yup.string().oneOf([Yup.ref('password'), null], 'Passwords must match').required('Confirm Password is required'),
-        acceptTerms: Yup.bool().oneOf([true], 'Accept Terms & Conditions is required')
     });
 
-    const onSubmit = fields => {
-        console.log('Form data:', fields);
+    const onSubmit = async (values, { setSubmitting }) => {
+        console.log('Submitting form with values:', values);
+        try {
+            const response = await register(values).unwrap();
+            console.log('User registered:', response);
+            // Show success popup
+            Swal.fire({
+                icon: 'success',
+                title: 'Registration Successful!',
+                text: 'Please verify your email. Thank you!',
+            });
+        } catch (err) {
+            console.error('Register error:', err);
+        } finally {
+            setSubmitting(false);
+        }
     };
+    
+
     return (
         <div className="main-wrapper">
             <div className="content align-items-center">
@@ -70,18 +87,7 @@ const Register = () => {
                                                 <Field name="confirmPassword" type="password" className={'form-control form-control-lg group_formcontrol' + (errors.confirmPassword && touched.confirmPassword ? ' is-invalid' : '')} />
                                                 <ErrorMessage name="confirmPassword" component="div" className="invalid-feedback" />
                                             </div>
-                                            <div className="form-group form-check">
-                                                <Field type="checkbox" name="acceptTerms" className={'form-check-input custom-check d-flex flex-wrap ' + (errors.acceptTerms && touched.acceptTerms ? ' is-invalid' : '')} />
-                                                <label htmlFor="acceptTerms" className="form-check-label">Accept Terms & Conditions</label>
-                                                <ErrorMessage name="acceptTerms" component="div" className="invalid-feedback" />
-                                            </div>
 
-                                            {/* <div className="form-group">
-                                                <label className="custom-check d-flex flex-wrap">
-                                                    <input type="checkbox" name="agreeTerms" checked={formData.agreeTerms} onChange={handleChange} />I agreed to all the <Link to="#" data-bs-toggle="modal" data-bs-target="#terms"> Terms & Conditions,</Link><Link to="#">Privacy Policy.</Link>
-                                                    <span className="checkmark"></span>
-                                                </label>
-                                            </div> */}
                                             <div className="pt-1">
                                                 <div className="text-center">
                                                     <button className=" newgroup_create btn-block d-block w-100" type="submit">Create Account</button>

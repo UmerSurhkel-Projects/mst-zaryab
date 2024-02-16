@@ -3022,11 +3022,11 @@ ul.list-inline .list-inline-item {
 	padding: 10px 20px;
 	line-height: 1.6;
 	border-radius: .375rem;
-	background-color: #680A83;
+	background-color: #680A83 !important;
 	box-shadow: none;
 	border-color: #680A83;
 	margin: 0px auto 15px;
-	color: #fff;
+	color: #fff !important;
 	font-size: 14px;
 	text-align: center;
 	font-weight: 500;

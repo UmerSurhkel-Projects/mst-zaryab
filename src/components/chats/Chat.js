@@ -8,19 +8,14 @@ import { faSearch, faPhoneAlt, faVideo, faUser, faEllipsisH, faCopy, faClock, fa
 
 
 const Chat = () => {
-    // State to manage the visibility of the chat search bar
     const [isChatSearchVisible, setIsChatSearchVisible] = useState(false);
-
-    // Function to toggle the visibility state
     const toggleChatSearchVisibility = () => {
         setIsChatSearchVisible(!isChatSearchVisible);
     };
 
-    
     return (
 
         <div className="chat" id="middle">
-
             <div className="slimscroll">
                 <div className="chat-header">
                     <div className="user-details">
@@ -50,7 +45,7 @@ const Chat = () => {
                                     <FontAwesomeIcon icon={faSearch} />
                                 </Link>
                             </li>
-                            <li className="list-inline-item" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Voice call">
+                            {/* <li className="list-inline-item" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Voice call">
                                 <Link to="" className="btn btn-outline-light" data-bs-toggle="modal"
                                     data-bs-target="#voice_call">
 
@@ -62,7 +57,7 @@ const Chat = () => {
                                     data-bs-target="#video_call">
                                     <FontAwesomeIcon icon={faVideo} />
                                 </Link>
-                            </li>
+                            </li> */}
                             <li className="list-inline-item dream_profile_menu" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Profile">
                                 <Link to="" className="btn btn-outline-light">
                                     <FontAwesomeIcon icon={faUser} />
@@ -83,9 +78,9 @@ const Chat = () => {
                     {isChatSearchVisible &&
                      <div className="chat-search visible-chat">
                      <form>
-                         <span className="fas fa-search form-control-feedback"></span>
+                         <span className="form-control-feedback"><FontAwesomeIcon icon={faSearch}/></span>
                          <input type="text" name="chat-search" placeholder="Search Chats" className="form-control" />
-                         <div className="close-btn-chat"><span className="material-icons">close</span></div>
+                         <div className="close-btn-chat" onClick={()=> setIsChatSearchVisible(!isChatSearchVisible)}><span className="material-icons">close</span></div>
                      </form>
                  </div>
                     

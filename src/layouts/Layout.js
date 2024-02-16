@@ -1,10 +1,7 @@
-import React from 'react';
 import { Outlet } from 'react-router-dom';
 import LeftSidebar from '../components/sidebar/LeftSidebar';
 import RightSidebar from '../components/sidebar/RightSidebar';
 import Main from '../components/main/Main';
-
-
 
 const Layout = () => {
   return (

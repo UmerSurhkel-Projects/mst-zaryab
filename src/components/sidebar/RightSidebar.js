@@ -82,7 +82,7 @@ const RightSidebar = () => {
                                                     <ul>
                                                         <li className="d-flex align-items-center">
                                                             <label className="switch">
-                                                                <input type="checkbox" checked />
+                                                                <input type="checkbox"  />
                                                                 <span className="slider round"></span>
                                                             </label>
                                                             <div>
