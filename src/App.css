@@ -114,6 +114,9 @@ Version      : 1.0
 .text-light {
 	color: #e6e6e6 !important;
 }
+.text-purple{
+	color: #5a078b;
+}
 
 a {
 	color: #0a80ff;
@@ -136,6 +139,7 @@ a.btn:focus {
 .no-caret::after {
 	display: none !important;
   }
+  .delete-account{cursor: pointer;}
   
 .profile_button {
 	font-size: 14px !important;
@@ -360,8 +364,12 @@ ul.list-inline .list-inline-item {
 	padding: 7px 14px;
 	font-weight: 500;
 	color: #232323;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
 	
 }
+
 
 .dropdown-menu .dropdown-item span {
 	float: right;
@@ -1286,7 +1294,7 @@ ul.list-inline .list-inline-item {
 .sidebar-body {
 	flex: 1;
 	overflow: auto;
-	padding: 10px 25px;
+	padding: 0px 25px;
 	width: 100%;
 }
 
@@ -2425,6 +2433,7 @@ ul.list-inline .list-inline-item {
 }
 
 .right-sidebar-profile > .avatar {
+	overflow: hidden;
 	background: rgba(66, 11, 161, 0.1);
 	padding: 7px;
 }
@@ -3441,6 +3450,10 @@ ul.list-inline .list-inline-item {
 	padding: 13px 25px;
 	height: 47px;
 	border-radius: 1px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 20px;
 }
 
 .custom-radio {
@@ -3648,6 +3661,7 @@ body.custom-model-open .modal-backdrop.show {
 .modal-content {
 	border-radius: 10px;
 }
+
 
 .status-modal .modal-dialog {
 	max-width: 90%;
@@ -5145,6 +5159,7 @@ i.fas.fa-ellipsis-h.ellipse_header {
 	height: 100%;
 }
 
+.form-group {margin-bottom: 20px;}
 .account-content .form-group label {
 	font-weight: 600;
 	color: #464646;
@@ -5937,7 +5952,7 @@ i.fas.fa-ellipsis-h.ellipse_header {
 .authentication h4 {
 	color: #420BA1;
 	font-weight: 600;
-	font-size: 16px;
+	font-size: 20px;
 	margin-bottom: 1rem;
 }
 
@@ -5970,6 +5985,7 @@ p:last-child {
 	background: #1D262E;
 	color: #E5EEFF;
 }
+.darkmode a{color: #FD6286;}
 
 .darkmode .chat .chat-header {
 	background: #36404A;
@@ -7046,3 +7062,63 @@ p:last-child {
 		margin: 0 7px;
 	}
 }
+
+/* Two factor */  
+  .auth-form {
+	background-color: #fff;
+	padding: 10px;
+	border-radius: 8px;
+  }
+
+  .radio-label {
+	font-weight: 500;
+	margin-right: 10px;
+  }
+  
+  .auth-radio {
+	margin-right: 5px;
+  }
+  
+  .auth-note,
+  .auth-restriction-note {
+	font-size: 0.9rem;
+	color: #666;
+	margin-bottom: 15px;
+  }
+  
+  .verify-btn,
+  .save-btn {
+	padding: 10px 15px;
+	margin-right: 10px;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+  }
+  
+  .verify-btn {
+	background-color: #f0ad4e;
+	color: #fff;
+  }
+  
+  .save-btn {
+	background-color: #5cb85c;
+	color: #fff;
+  }
+  
+  /* CSS for animation */
+@keyframes skeleton-pulse {
+	0% {
+	  background-color: #f0f0f0;
+	}
+	50% {
+	  background-color: #e0e0e0;
+	}
+	100% {
+	  background-color: #f0f0f0;
+	}
+  }
+  
+  .skeleton-animate {
+	animation: skeleton-pulse 1.5s ease-in-out infinite;
+  }
+  .disable{pointer-events: none;opacity: 0.5;}

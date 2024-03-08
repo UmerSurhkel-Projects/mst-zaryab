@@ -1,0 +1,26 @@
+#loading {
+    width: 100%;
+    height: 100%;
+    top: 0px;
+    left: 0px;
+    position: fixed;
+    display: block;
+    opacity: 0.9;
+    background-color: #d12200;
+    z-index: 99;
+    text-align: center;
+}
+
+#loading-image {
+    left: 50%;
+    z-index: 100;
+    margin-top: 36vh;
+    width: 190px;
+}
+
+
+.preload-fade {
+    opacity: 0 !important;
+    transition: ease-out .2s;
+}
+

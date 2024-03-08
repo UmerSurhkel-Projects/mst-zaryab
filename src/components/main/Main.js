@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
-import Chat from '../chats/Chat';
 import User from '../users/User';
 import TopUser from '../users/TopUser';
 import Search from '../search/Search';
+import ChatPlaceHolder from '../chats/ChatPlaceholder';
 
 const Main = () => {
     return (
@@ -27,11 +27,11 @@ const Main = () => {
                         <Search />
                         </div>
                         <TopUser />
-                        <User />
+                        <User title="Recent Chats" />
                     </div>
                 </div>
             </div>
-            <Chat />
+            <ChatPlaceHolder />
         </>
     )
 }

@@ -1,23 +1,22 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretLeft } from "@fortawesome/free-solid-svg-icons";
 import { Formik, Field, Form, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import Swal from 'sweetalert2';
-import { useLoginMutation, useResendEmailMutation } from "../../../api/AuthApi";
+import { useLoginMutation, useResendEmailMutation, useVerifyOtpMutation } from "../../../api/AuthApi";
 import { ToastContainer, toast } from 'react-toastify';
 import images from "../../../assets/assets";
+import OtpModal from "../../../components/security/OtpModal";
 
 const Login = () => {
     const navigate = useNavigate();
-    const [login, { isLoading }] = useLoginMutation();
+    const [login, { isLoading, isSuccess }] = useLoginMutation();
     const [resendEmail] = useResendEmailMutation();
-    const initialValues = {
-        email: '',
-        password: '',
-    };
-
+    const [verifyOtp] = useVerifyOtpMutation();
+    const [showOtpModal, setShowOtpModal] = useState(false)
+    const initialValues = { email: '', password: '', };
     const validationSchema = Yup.object().shape({
         email: Yup.string().email('Email is invalid').required('Email is required'),
         password: Yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
@@ -25,7 +24,7 @@ const Login = () => {
     useEffect(() => {
         const isAuthenticated = localStorage.getItem('accessToken');
         if (isAuthenticated) {
-            navigate('/'); // Redirect to home or another target route
+            navigate('/');
         }
     }, [navigate]);
 
@@ -33,15 +32,18 @@ const Login = () => {
         try {
             const response = await login(values).unwrap();
             const { accessToken, user } = response;
-            localStorage.setItem('accessToken', accessToken);
-            localStorage.setItem('user', JSON.stringify(user));
             if (response) {
-                console.log(toast, "...........................................................")
+                return setShowOtpModal(true);
+            }
+                localStorage.setItem('accessToken', accessToken);
+                localStorage.setItem('user', JSON.stringify(user));
+                setSubmitting(false);
+            
+
+            if (response) {
                 toast("Login successful");
             }
             navigate("/");
-
-
             console.log('User logged in:', user);
         } catch (err) {
             console.error('Login error:', err);
@@ -77,12 +79,28 @@ const Login = () => {
                 });
             }
         } finally {
-            setSubmitting(false);
+            if (!showOtpModal) setSubmitting(false);
         }
     };
+    const handleOtpSubmit = async (otp, value) => {
+        try {
+            const verificationData = { otp, value: true };
+            const response = await verifyOtp(verificationData).unwrap();
+            localStorage.setItem('accessToken', response.user.accessToken);
+            navigate('/');
+            toast.success("OTP verification successful");
+        } catch (error) {
+            console.error("OTP Verification error:", error);
+            toast.error("OTP verification failed");
+        } finally {
+            setShowOtpModal(false);
+        }
+    };
+
     return (
         <>
             <ToastContainer />
+            {showOtpModal && <OtpModal onSubmit={handleOtpSubmit} onClose={() => setShowOtpModal(false)} />}
             <div className="main-wrapper">
                 <div className="content align-items-center">
                     <div className="w-100 ">
@@ -100,7 +118,7 @@ const Login = () => {
                                         <p>Login with your Data that you entered during your Registration</p>
                                     </div>
                                     <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={onSubmit}>
-                                        {({ errors, touched }) => (
+                                        {({ errors, touched ,isSubmitting }) => (
                                             <Form>
                                                 <div className="form-group">
                                                     <label htmlFor="email">Email</label>
@@ -114,15 +132,9 @@ const Login = () => {
                                                     <ErrorMessage name="password" component="div" className="invalid-feedback" />
                                                 </div>
 
-                                                {/* <div className="form-group form-check mt-3">
-                                                <Field type="checkbox" name="acceptTerms" className={'form-check-input custom-check d-flex flex-wrap ' + (errors.acceptTerms && touched.acceptTerms ? ' is-invalid' : '')} />
-                                                <label htmlFor="acceptTerms" className="form-check-label">Accept Terms & Conditions</label>
-                                                <ErrorMessage name="acceptTerms" component="div" className="invalid-feedback" />
-                                            </div> */}
-
                                                 <div className="pt-1">
                                                     <div className="text-center">
-                                                        <button className="btn newgroup_create btn-block d-block w-100" type="submit">Login</button>
+                                                    <button className={`btn newgroup_create btn-block d-block w-100 ${isSuccess ? "disable" : ""}`} type="submit" disabled={isSuccess}>Login</button>
                                                     </div>
                                                 </div>
 
@@ -135,20 +147,16 @@ const Login = () => {
                                             </Form>
                                         )}
                                     </Formik>
-
                                 </div>
                                 <div className="back-btn-col text-center">
                                     <Link to="/"><span><FontAwesomeIcon icon={faCaretLeft} /></span> Back</Link>
                                 </div>
-
                             </div>
                         </div>
                         <div className="login-right">
                         </div>
                     </div>
-
                 </div>
-
             </div>
 
         </>

@@ -8,6 +8,8 @@ import avatarThree from '../assets/images/avatar/avatar-3.jpg';
 import avatarFour from '../assets/images/avatar/avatar-4.jpg';
 import avatarTwelve from '../assets/images/avatar/avatar-12.jpg';
 import logoFull from '../assets/images/logo-full.png';
+import avatarTen from '../assets/images/avatar/avatar-10.jpg';
+import placeHolder from '../assets/images/placeholder-person.png';
 
 
 
@@ -21,7 +23,9 @@ const images = {
     avatarThree,
     avatarFour,
     avatarTwelve,
-    logoFull
+    logoFull,
+    avatarTen,
+    placeHolder
   };
   
   export default images;

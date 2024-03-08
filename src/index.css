@@ -1,2 +1,17 @@
 a{color: #5a078b;text-decoration: none;}
 ul{list-style: none;padding: 0;margin: 0;}
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1050;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+.dropdown-toggle,.show>.btn-primary.dropdown-toggle{background-color: unset;border: none;color: #C8C8D8;box-shadow: none;}
+.dropdown-toggle:hover,.dropdown-toggle:focus{background-color: unset;}
+primary:active:focus, .show>.btn-primary.dropdown-toggle:focus {
+    box-shadow: none;
+}
+.dropdown-toggle::after{display: none;color: #5a078b;}
