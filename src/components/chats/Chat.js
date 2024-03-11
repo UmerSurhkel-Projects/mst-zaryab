@@ -21,6 +21,8 @@ const Chat = () => {
     const navigate = useNavigate();
     const [showSearch, setShowSearch] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [onclickFilterContacts, setOnclickFilterContacts] = useState([]); // Define filteredContactList state
+
 
     const [isChatSearchVisible, setIsChatSearchVisible] = useState(false);
     const [isProfileVisible, setIsProfileVisible] = useState(true)
@@ -29,7 +31,7 @@ const Chat = () => {
 
 
 
-    console.log(contact, "contact information...")
+    console.log(contact, "contact information...",)
     const userInformation = contact?.contactId;
     const userSocialLinks = contact?.contactId?.socialLinks
     const { data: { contactList = [] } = {}, isError, isContactList, refetch } = useGetContactListQuery({
@@ -41,10 +43,13 @@ const Chat = () => {
     const handleSearch = (query) => {
         setSearchQuery(query);
     };
+    const handleSearchClick = (query) => {
+        setSearchQuery(query);
+    }
+   
     const filteredContactList = contactList.filter(contact =>
         contact.userName.toLowerCase().includes(searchQuery.toLowerCase())
     );
-
 
     const toggleChatSearchVisibility = () => {
         setIsChatSearchVisible(!isChatSearchVisible);
@@ -63,6 +68,7 @@ const Chat = () => {
             console.error('Error deleting contact:', error);
         }
     };
+  
    
     return (
         <>
@@ -70,7 +76,7 @@ const Chat = () => {
                 <div id="chats" className="left-sidebar-wrap sidebar active slimscroll">
                     <div className="slimscroll">
                         <div className="mt-3">
-                            <Search handleSearch={handleSearch} />
+                            <Search handleSearch={handleSearch} onMyClick={handleSearchClick}  />
                             {filteredContactList.length > 0 ? (
                                 filteredContactList.map(contact => (
                                     <div onClick={() => handleContactClick(contact?.contactId?._id)} key={contact._id}>
@@ -504,6 +510,8 @@ const Chat = () => {
                     userFacebook={userSocialLinks?.facebook}
                     userTwitter={userSocialLinks?.twitter}
                     userInstagram={userSocialLinks?.instagram}
+                    block={contact?.block}
+                    mute={contact?.mute}
                 />
             }
         </>

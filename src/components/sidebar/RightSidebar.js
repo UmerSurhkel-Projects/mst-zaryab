@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Scrollbars } from 'react-custom-scrollbars';
 import { Formik, Field, Form} from 'formik';
@@ -27,7 +27,12 @@ const RightSidebar = (props) => {
 
     const [block, setBlock] = useState(initialSettingsValues.block);
     const [mute, setMute] = useState(initialSettingsValues.mute);
-
+    useEffect(() => {
+        setBlock(props.block)
+        setMute(props.mute);
+    
+    }, [props])
+    
     const updateContact = async (updates) => {
         try {
             const data = { ...updates, contactId };
