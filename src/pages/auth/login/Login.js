@@ -10,9 +10,12 @@ import { ToastContainer, toast } from 'react-toastify';
 import images from "../../../assets/assets";
 import OtpModal from "../../../components/security/OtpModal";
 
+
 const Login = () => {
     const navigate = useNavigate();
-    const [login, { isLoading, isSuccess }] = useLoginMutation();
+    const [login, { isLoading, isSuccess, isError }] = useLoginMutation();
+    console.log('isLoading: ', isLoading);
+
     const [resendEmail] = useResendEmailMutation();
     const [verifyOtp] = useVerifyOtpMutation();
     const [showOtpModal, setShowOtpModal] = useState(false)
@@ -28,17 +31,21 @@ const Login = () => {
         }
     }, [navigate]);
 
+   
     const onSubmit = async (values, { setSubmitting }) => {
         try {
             const response = await login(values).unwrap();
             const { accessToken, user } = response;
-            if (response) {
+            const userId = user._id; // Assuming `user` is an object with an `_id` property
+            localStorage.setItem('userId', userId);
+            
+            localStorage.setItem('accessToken', accessToken);
+            localStorage.setItem('user', JSON.stringify(user));
+            setSubmitting(false);
+            if (response.otpSuccess === true) {
                 return setShowOtpModal(true);
             }
-                localStorage.setItem('accessToken', accessToken);
-                localStorage.setItem('user', JSON.stringify(user));
-                setSubmitting(false);
-            
+
 
             if (response) {
                 toast("Login successful");
@@ -99,6 +106,7 @@ const Login = () => {
 
     return (
         <>
+
             <ToastContainer />
             {showOtpModal && <OtpModal onSubmit={handleOtpSubmit} onClose={() => setShowOtpModal(false)} />}
             <div className="main-wrapper">
@@ -118,7 +126,7 @@ const Login = () => {
                                         <p>Login with your Data that you entered during your Registration</p>
                                     </div>
                                     <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={onSubmit}>
-                                        {({ errors, touched ,isSubmitting }) => (
+                                        {({ errors, touched, isSubmitting }) => (
                                             <Form>
                                                 <div className="form-group">
                                                     <label htmlFor="email">Email</label>
@@ -134,22 +142,19 @@ const Login = () => {
 
                                                 <div className="pt-1">
                                                     <div className="text-center">
-                                                    <button className={`btn newgroup_create btn-block d-block w-100 ${isSuccess ? "disable" : ""}`} type="submit" disabled={isSuccess}>Login</button>
+                                                        <button className={`btn newgroup_create btn-block d-block w-100 ${isSuccess ? "disable" : ""}`} type="submit" disabled={isSuccess}>Login</button>
                                                     </div>
                                                 </div>
 
                                                 <div className="text-center dont-have">Don’t have an account? <Link to="/register">Signup</Link></div>
-                                                <div className="text-center mt-3">
+                                                {/* <div className="text-center mt-3">
                                                     <span className="forgot-link">
                                                         <Link to="forgotpassword-email.html" className="text-end">Forgot Password ?</Link>
                                                     </span>
-                                                </div>
+                                                </div> */}
                                             </Form>
                                         )}
                                     </Formik>
-                                </div>
-                                <div className="back-btn-col text-center">
-                                    <Link to="/"><span><FontAwesomeIcon icon={faCaretLeft} /></span> Back</Link>
                                 </div>
                             </div>
                         </div>

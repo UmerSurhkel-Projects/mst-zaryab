@@ -1,17 +1,21 @@
-import React, {useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Scrollbars } from 'react-custom-scrollbars';
-import { Formik, Field, Form} from 'formik';
+import { Formik, Field, Form } from 'formik';
 import * as Yup from 'yup';
 import Swal from 'sweetalert2';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFacebookF, faTwitter, faInstagram } from '@fortawesome/free-brands-svg-icons';
 import { useUpdateContactMutation } from '../../api/ContactApi';
-import { faTrashAlt } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrashAlt, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
+
 
 const RightSidebar = (props) => {
     const { contactId } = useParams();
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+    const [isEditingUsername, setIsEditingUsername] = useState(false);
+    const [username, setUsername] = useState(props.userName);
+    const [editingUsername, setEditingUsername] = useState(props.userName); // Temporary username for editing
     const toggleSidebar = () => setIsSidebarVisible(!isSidebarVisible);
     const [mutateUpdateContact] = useUpdateContactMutation();
 
@@ -30,14 +34,16 @@ const RightSidebar = (props) => {
     useEffect(() => {
         setBlock(props.block)
         setMute(props.mute);
-    
+        setUsername(props.username);
     }, [props])
-    
+
+
     const updateContact = async (updates) => {
         try {
             const data = { ...updates, contactId };
             const response = await mutateUpdateContact(data);
             if (response && response.data && response.data.user) {
+                //  props.handleUpdateParent(response.data.user);
                 setBlock(response.data.user.block);
                 setMute(response.data.user.mute);
             } else {
@@ -59,18 +65,49 @@ const RightSidebar = (props) => {
         }
         Swal.fire({
             title: 'Do you want to save the changes?',
-            showDenyButton: true,
             confirmButtonText: 'Save',
-            denyButtonText: `Don't save`,
             showCancelButton: true,
         }).then(async (result) => {
             if (result.isConfirmed) {
                 await updateContact(updates);
+
             } else {
-                setBlock(initialSettingsValues.block);
-                setMute(initialSettingsValues.mute);
+                setBlock(block);
+                setMute(mute);
             }
         });
+    };
+
+    const handleUsernameEdit = () => {
+        setIsEditingUsername(true);
+        setEditingUsername(username);
+    };
+
+    const handleUsernameChange = (e) => {
+        setEditingUsername(e.target.value);
+    };
+
+    const handleUsernameCancel = () => {
+        setIsEditingUsername(false);
+        setEditingUsername(username);
+    };
+
+    const handleUsernameSubmit = async (confirm) => {
+        if (confirm) {
+            try {
+                const response = await mutateUpdateContact({ contactId, userName: editingUsername });
+                if (response && response.data && response.data.user) {
+                    setUsername(response.data.user.userName); // Update username with response
+                    setIsEditingUsername(false);
+                } else {
+                    console.error('Invalid response format:', response);
+                }
+            } catch (error) {
+                console.error('Error updating username:', error);
+            }
+        } else {
+            handleUsernameCancel(); // Revert changes if not confirmed
+        }
     };
 
     return (
@@ -94,10 +131,36 @@ const RightSidebar = (props) => {
                                     <figure className="avatar avatar-xl mb-3">
                                         <img src={props.userImage} alt="Profile" className="rounded-circle" />
                                     </figure>
-                                    <h5 className="profile-name">{props.userName}</h5>
-                                    <div className="online-profile">
+                                    <h5 className="profile-name">
+                                        {
+                                            isEditingUsername ? (
+                                                <div className="username-edit-container">
+                                                    <input
+                                                        type="text"
+                                                        value={editingUsername}
+                                                        onChange={handleUsernameChange}
+                                                        className="username-input"
+                                                        autoFocus
+                                                    />
+                                                    <div className="username-icons">
+                                                        <FontAwesomeIcon icon={faCheck} className="username-icon text-purple" onClick={() => handleUsernameSubmit(true)} />
+                                                        <FontAwesomeIcon icon={faTimes} className="username-icon text-danger" onClick={() => handleUsernameSubmit(false)} />
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    {username}
+                                                    <span className='text-purple'>
+                                                        <FontAwesomeIcon icon={faEdit} onClick={handleUsernameEdit} />
+                                                    </span>
+                                                </>
+                                            )
+                                        }
+
+                                    </h5>
+                                    {/* <div className="online-profile">
                                         <span>online</span>
-                                    </div>
+                                    </div> */}
                                 </div>
                                 <div>
                                     <div className="about-media-tabs">
@@ -111,14 +174,14 @@ const RightSidebar = (props) => {
                                                 <p>{props.userBio}</p>
                                                 <div className="member-details">
                                                     <ul>
-                                                        <li>
+                                                        {/* <li>
                                                             <h6>Phone</h6>
                                                             <span>{props.userPhoneNumber}</span>
-                                                        </li>
-                                                        <li>
+                                                        </li> */}
+                                                        {/* <li>
                                                             <h6>Nick Name</h6>
                                                             <span>{props.nickName}</span>
-                                                        </li>
+                                                        </li> */}
                                                         <li>
                                                             <h6>Email</h6>
                                                             <span><a href={`mailto:${props.userEmail}`} className="__cf_email__">{props.userEmail}</a></span>
@@ -126,12 +189,31 @@ const RightSidebar = (props) => {
                                                     </ul>
                                                 </div>
                                                 <div className="social-media-col">
-                                                    <h6>Social media accounts</h6>
+                                                 {props.userFacebook || props.userTwitter || props.userInstagram ?  <h6>Social media accounts</h6> :""}
                                                     <ul>
-                                                        <li><a href={props.userFacebook} target="_blank" rel="noopener noreferrer"><FontAwesomeIcon icon={faFacebookF} /></a></li>
-                                                        <li><a href={props.userTwitter} target="_blank" rel="noopener noreferrer"><FontAwesomeIcon icon={faTwitter} /></a></li>
-                                                        <li><a href={props.userInstagram} target="_blank" rel="noopener noreferrer"><FontAwesomeIcon icon={faInstagram} /></a></li>
+                                                        {props.userFacebook && (
+                                                            <li>
+                                                                <a href={props.userFacebook} target="_blank" rel="noopener noreferrer">
+                                                                    <FontAwesomeIcon icon={faFacebookF} />
+                                                                </a>
+                                                            </li>
+                                                        )}
+                                                        {props.userTwitter && (
+                                                            <li>
+                                                                <a href={props.userTwitter} target="_blank" rel="noopener noreferrer">
+                                                                    <FontAwesomeIcon icon={faTwitter} />
+                                                                </a>
+                                                            </li>
+                                                        )}
+                                                        {props.userInstagram && (
+                                                            <li>
+                                                                <a href={props.userInstagram} target="_blank" rel="noopener noreferrer">
+                                                                    <FontAwesomeIcon icon={faInstagram} />
+                                                                </a>
+                                                            </li>
+                                                        )}
                                                     </ul>
+
                                                 </div>
                                                 <Formik
                                                     initialValues={initialSettingsValues}
@@ -176,12 +258,12 @@ const RightSidebar = (props) => {
                             </div>
                         </div>
                         <div className="report-col">
-							<ul>
-								{/* <li><a href="#"><span><i className="fas fa-sign-out-alt"></i></span> Exit Group</a></li>
+                            <ul>
+                                {/* <li><a href="#"><span><i className="fas fa-sign-out-alt"></i></span> Exit Group</a></li>
 								<li><a href="#"><span className="material-icons">report_problem</span> Report Chat</a></li> */}
-								<li className='text-danger delete-account'><span href="#"><span><FontAwesomeIcon icon={faTrashAlt}/></span> Delete Chat</span></li>
-							</ul>
-						</div>
+                                <li className='text-danger delete-account'><span href="#"><span><FontAwesomeIcon icon={faTrashAlt} /></span> Delete Chat</span></li>
+                            </ul>
+                        </div>
                     </div>
                 </Scrollbars>
             </div>

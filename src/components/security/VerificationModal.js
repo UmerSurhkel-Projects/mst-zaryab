@@ -36,35 +36,35 @@ const VerificationModal = ({ onSubmit, onClose, verificationType }) => {
 
     return (
         <div className="modal-backdrop">
-        <div className="modal-overlay security-modal ">
-            <div className="modal-content">
-                <h2>{verificationType === 1 ? 'Phone Verification' : 'Email Verification'}</h2>
-                <Formik
-                    initialValues={initialFormValues}
-                    validationSchema={verificationSchema}
-                    onSubmit={handleSubmit}
-                >
-                    {({ isSubmitting }) => (
-                        <Form>
-                            {verificationType === 1 && (
-                                <>
-                                    <Field name="phone" className="phone-input" type="tel" placeholder="Enter your phone number" />
-                                    <ErrorMessage name="phone" component="div" className="error-message" />
-                                </>
-                            )}
-                            <div className="modal-actions">
-                                <button type="submit" className="modal-submit-btn" disabled={isSubmitting}>
-                                    {verificationType === 1 ? 'Send Code to Phone' : ''}
-                                </button>
-                                <button type="button" onClick={onClose} className="modal-close-btn">
-                                    Cancel
-                                </button>
-                            </div>
-                        </Form>
-                    )}
-                </Formik>
+            <div className="modal-overlay security-modal ">
+                <div className="modal-content">
+                    <h2>{verificationType === 1 ? 'Phone Verification' : 'Email Verification'}</h2>
+                    <Formik
+                        initialValues={initialFormValues}
+                        validationSchema={verificationSchema}
+                        onSubmit={handleSubmit}
+                    >
+                        {({ isSubmitting }) => (
+                            <Form>
+                                {verificationType === 1 && (
+                                    <>
+                                        <Field name="phone" className="phone-input" type="tel" placeholder="Enter your phone number" />
+                                        <ErrorMessage name="phone" component="div" className="error-message" />
+                                    </>
+                                )}
+                                <div className="modal-actions">
+                                    <button type="submit" className="modal-submit-btn" disabled={isSubmitting}>
+                                        {verificationType === 1 ? 'Send Code to Phone' : ''}
+                                    </button>
+                                    <button type="button" onClick={onClose} className="modal-close-btn">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </Form>
+                        )}
+                    </Formik>
+                </div>
             </div>
-        </div>
         </div>
     );
 };

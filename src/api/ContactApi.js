@@ -47,17 +47,18 @@ export const contactApi = createApi({
                 url: `/contacts/get/${contactId}`,
                 method: 'GET',
             }),
+            providesTags: (contactId) => [{ type: 'Contact', id: contactId }],
         }),
         updateContact: builder.mutation({
             query: ({ contactId, ...data }) => ({
                 url: `/contacts/update/${contactId}`,
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
                 body: data,
             }),
-            invalidatesTags: ['ContactList'],
+            invalidatesTags: ({ contactId }) => [
+                { type: 'Contact', id: contactId },
+                'ContactList',
+            ],
         }),
     }),
 });

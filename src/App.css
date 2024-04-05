@@ -348,6 +348,7 @@ ul.list-inline .list-inline-item {
 .form-control:focus {
 	box-shadow: none;
 	border-color: #e6e6e6;
+
 }
 
 .custom-control-label {
@@ -624,7 +625,7 @@ ul.list-inline .list-inline-item {
 	color: rgb(255, 255, 255);
 }
 
-.chat-menus ul li a.chat-unread:before {
+/* .chat-menus ul li a.chat-unread:before {
 	content: "";
 	position: absolute;
 	right: 5px;
@@ -641,7 +642,7 @@ ul.list-inline .list-inline-item {
 
 .chat-menus ul li a.chat-unread.pink:before {
 	background-color: #EE00AB;
-}
+} */
 
 .chat-menus ul li a:hover {
 	background: #F9F1FF;
@@ -868,7 +869,8 @@ ul.list-inline .list-inline-item {
 	color: #585858;
 	font-size: 12px;
 	display: inline-block;
-	margin-top: 9px;
+	margin-left: 7px;
+	cursor: pointer;
 }
 
 .top-contacts-box .profile-img.online:before {
@@ -918,7 +920,7 @@ ul.list-inline .list-inline-item {
 	align-items: center;
 	justify-content: center;
 }
-
+/* 
 .avatar-away::before,
 .avatar-offline::before,
 .avatar-online::before {
@@ -930,9 +932,9 @@ ul.list-inline .list-inline-item {
 	border-radius: 50%;
 	content: '';
 	border: 2px solid #fff;
-}
+} */
 
-.avatar-online::before {
+/* .avatar-online::before {
 	background-color: #00e65b;
 }
 
@@ -942,7 +944,7 @@ ul.list-inline .list-inline-item {
 
 .avatar-away::before {
 	background-color: #ffbc34;
-}
+} */
 
 .avatar .border {
 	border-width: 3px !important;
@@ -1303,6 +1305,9 @@ ul.list-inline .list-inline-item {
 	color: #4B0973;
 	font-size: 18px;
 	margin-bottom: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .online-profile {
@@ -1440,6 +1445,28 @@ ul.list-inline .list-inline-item {
 	right: 0;
 	bottom: 0;
 }
+.username-edit-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.username-input {
+    padding-right: 50px; /* Adjust based on icon size to prevent text overlap */
+    width: 100%;
+}
+
+.username-icons {
+    position: absolute;
+    right: 10px; /* Adjust based on desired distance from the right edge */
+    display: flex;
+    gap: 10px; /* Adjust the space between icons */
+}
+
+.username-icon {
+    cursor: pointer;
+}
+
 
 .sidebar .user-list li .users-list-body .last-chat-time .chat-toggle {
 	position: absolute;
@@ -1452,6 +1479,11 @@ ul.list-inline .list-inline-item {
 	-ms-transition: all .5s ease;
 	width: 18px;
 	height: 24px;
+}
+.dropdown-toggle:hover, .dropdown-toggle:focus{
+	color: #909090 !important;
+	background: transparent;
+	box-shadow: none !important;
 }
 
 .sidebar .user-list li.unread h5 {
@@ -1841,7 +1873,7 @@ ul.list-inline .list-inline-item {
 	align-items: flex-end;
 	-webkit-align-items: flex-end;
 	padding-bottom: 22px;
-	color: #008024;
+	/* color: #008024; */
 }
 
 .chat .chat-body .messages .chats.chats-right .chat-content {
@@ -1998,6 +2030,7 @@ ul.list-inline .list-inline-item {
 
 .chat .chat-footer svg{font-size: 25px;}
 .darkmode .chat .chat-footer svg{color: #fff;}
+
 
 .chat .chat-footer form {
 	display: flex;
@@ -2206,13 +2239,13 @@ ul.list-inline .list-inline-item {
 	z-index: 9;
 }
 
-.avatar-online::before {
+/* .avatar-online::before {
 	background-color: #34D859;
 }
 
 .avatar-away::before {
 	background-color: #FFE600;
-}
+} */
 
 .user-list li .avatar .letter-avatar {
 	width: 45px;
@@ -3653,6 +3686,7 @@ ul.list-inline .list-inline-item {
 	align-items: center;
 	justify-content: center;
 }
+.search_chat .input-group .input-group-text{cursor: pointer;}
 
 body.custom-model-open .modal-backdrop.show {
 	background-color: rgba(0, 0, 0, 0.4);
@@ -5985,7 +6019,7 @@ p:last-child {
 	background: #1D262E;
 	color: #E5EEFF;
 }
-.darkmode a{color: #FD6286;}
+.darkmode a{color: #E5EEFF;}
 
 .darkmode .chat .chat-header {
 	background: #36404A;
@@ -6163,8 +6197,13 @@ p:last-child {
 
 .darkmode .form-control {
 	color: #E5EEFF;
+	background: #36404A;
 }
 
+.darkmode .form-control:focus{
+	background: #36404A !important;
+	color: #fff;
+}
 .darkmode .right-sidebar {
 	background: #303841;
 }
@@ -7122,3 +7161,13 @@ p:last-child {
 	animation: skeleton-pulse 1.5s ease-in-out infinite;
   }
   .disable{pointer-events: none;opacity: 0.5;}
+  .highlight {
+    background-color: yellow;
+    font-weight: bold;
+}
+.empty-placeholder-chat-text{
+	color: #0057FF;
+}
+.darkmode .empty-placeholder-chat-text{
+color: #fff;
+}

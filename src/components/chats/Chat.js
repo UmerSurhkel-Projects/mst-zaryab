@@ -1,82 +1,216 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Scrollbars } from 'react-custom-scrollbars';
 import { Dropdown } from 'react-bootstrap';
-import images from '../../assets/assets'
+import moment from 'moment';
+import images from '../../assets/assets';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch, faPhoneAlt, faVideo, faUser, faEllipsisH, faCopy, faClock, faTrash, faArchive, faSmile, faPaperclip, faTrashAlt, faShare } from '@fortawesome/free-solid-svg-icons';
-import { useGetContactByIdQuery } from '../../api/ContactApi';
-import { userApi } from '../../api/UserApi';
+import { faSearch, faUser, faEllipsisH, faCopy, faClock, faTrashAlt, faShare, faTrash, faSmile, faPaperclip, faCheckDouble } from '@fortawesome/free-solid-svg-icons';
+import { useGetContactByIdQuery, useDeleteContactMutation } from '../../api/ContactApi';
 import RightSidebar from '../sidebar/RightSidebar';
-import User from '../../components/users/User';
-import { useGetContactListQuery, useUpdateContactMutation } from '../../api/ContactApi';
+import User from '../contacts/Contacts';
 import Search from '../../components/search/Search';
-import Title from '../title/Title';
-import { useDeleteContactMutation } from '../../api/ContactApi';
-import Loader from '../loader/Loader';
+import { useGetMessagesQuery } from '../../api/ChatApi';
+import { useGetContactListQuery } from '../../api/ContactApi';
+import { ToastContainer, toast } from 'react-toastify';
+import socket from '../../socket';
+import Avatar from './Avatar';
 
 const Chat = () => {
     const { contactId } = useParams();
+    const userId = localStorage.getItem('userId');
     const navigate = useNavigate();
     const [showSearch, setShowSearch] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    const [onclickFilterContacts, setOnclickFilterContacts] = useState([]); // Define filteredContactList state
-
-
     const [isChatSearchVisible, setIsChatSearchVisible] = useState(false);
-    const [isProfileVisible, setIsProfileVisible] = useState(true)
+    const [isProfileVisible, setIsProfileVisible] = useState(true);
     const { data: { user: contact } = {}, error, isLoading } = useGetContactByIdQuery(contactId);
-    const [deleteContactMutation] = useDeleteContactMutation()
-
-
-
-    console.log(contact, "contact information...",)
+    const [deleteContactMutation] = useDeleteContactMutation();
     const userInformation = contact?.contactId;
-    const userSocialLinks = contact?.contactId?.socialLinks
+    const userSocialLinks = contact?.contactId?.socialLinks;
+    // Retrieve the user object string from localStorage
+    const userStr = localStorage.getItem('user');
+    const user = JSON.parse(userStr);
+    const firstName = user?.firstName?.trim() ?? "";
+    const lastName = user?.lastName?.trim() ?? "";
+
+    // Pagination parameters
+    const limit = 10;
+    const page = 1;
+
     const { data: { contactList = [] } = {}, isError, isContactList, refetch } = useGetContactListQuery({
-        limit: 10,
-        page: 1,
-        search: searchQuery // Pass the search query to the hook
+        limit,
+        page,
+        search: searchQuery
     });
+
+    const { data: { messages = [] } = {}, error: messagesError, isLoading: messagesIsLoading } = useGetMessagesQuery({ contactId, limit, page });
+    // console.log("message data", messages)
+    const [currentMessage, setCurrentMessage] = useState('');
+    const [messageData, setMessageData] = useState([])
+    const [recentChats, setRecentChats] = useState([])
+
+    useEffect(() => {
+        // console.log(messages, "messages")
+        localStorage.setItem("messages", JSON.stringify(messages));
+        setMessageData(messages)
+    }, [messages]);
+
+    useEffect(() => {
+        // Socket code
+        const connectListener = () => {
+            console.log('Connected to server');
+        };
+
+        const messageReceivedListener = (message) => {
+            console.log('Message received:', message);
+            const receivedMessageData = {
+                ...message,
+                time: message.createdAt || moment().format('hh:mm A')
+            };
+
+            // Emit an event to the server to mark the message as seen
+            const data = { contactId: message?.senderId, userId: message?.receiverId };
+
+            if (contactId === message.senderId) {
+                console.log("seen message")
+                socket.emit('seen messages', data);
+            }
+            else {
+
+                console.log("increase message")
+                socket.emit('increase pending count', data);
+
+            }
+            if (contactId === message.senderId) {
+                setMessageData((prevMessages) => {
+                    const updatedMessages = [...prevMessages, receivedMessageData];
+                    localStorage.setItem("messages", JSON.stringify(updatedMessages));
+                    return updatedMessages;
+                });
+            }
+        };
+        const messageSeenListener = (data) => {
+            console.log(data)
+            const { getAllMessages } = data
+            console.log("messages seen message")
+            localStorage.setItem("messages", JSON.stringify(getAllMessages))
+            setMessageData(getAllMessages)
+        };
+        const messageCountListener = (data) => {
+            setRecentChats(data);
+            console.log(recentChats,"setRecentChats")
+        };
+        socket.on('connect', connectListener);
+        socket.on('message received', messageReceivedListener);
+        socket.on('messages seen', messageSeenListener);
+        socket.on('updating pending count', messageCountListener);
+
+
+
+        return () => {
+            socket.off('connect', connectListener);
+            socket.off('message received', messageReceivedListener);
+            socket.off('message seen', messageSeenListener);
+        };
+    });
+
+    // useEffect(() => {
+    //     // Socket code
+    //     const connectListener = () => {
+    //         console.log('Connected to server');
+    //     };
+
+    //     const messageReceivedListener = (message) => {
+    //         console.log('Message received:', message);
+    //         const receivedMessageData = {
+    //             ...message,
+    //             time: message.createdAt || moment().format('hh:mm A')
+    //         };
+    //         const data = contactId,userId
+    //         socket.emit('seen messages',data)
+    //         setMessageData((prevMessages) => {
+    //             const updatedMessages = [...prevMessages, receivedMessageData];
+    //             localStorage.setItem("messages", JSON.stringify(updatedMessages));
+    //             return updatedMessages;
+    //         });
+    //     };
+
+    //     socket.on('connect', connectListener);
+    //     socket.on('message received', messageReceivedListener)
+    //     socket.on('message seen',func);
+
+    //     return () => {
+    //         socket.off('connect', connectListener);
+    //         socket.off('message received', messageReceivedListener);
+    //     };
+    // }, [socket]);
+
+    const sendMessage = (e) => {
+        e.preventDefault();
+        if (currentMessage.trim()) {
+            const currentTime = moment().format('hh:mm A');
+            const createdAt = new Date(); // Use the current time as the creation time
+            const messageData = { message: currentMessage, userId, contactId, time: currentTime, createdAt };
+            socket.emit('send message', messageData);
+            setMessageData((prevMessages) => {
+                const updatedMessages = [...prevMessages, messageData];
+                localStorage.setItem("messages", JSON.stringify(updatedMessages));
+                return updatedMessages;
+            });
+            setCurrentMessage('');
+        }
+    };
+
+    const handleMessageChange = (e) => {
+        setCurrentMessage(e.target.value);
+    };
 
     const handleSearch = (query) => {
         setSearchQuery(query);
     };
+
     const handleSearchClick = (query) => {
         setSearchQuery(query);
-    }
-   
-    const filteredContactList = contactList.filter(contact =>
-        contact.userName.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    };
 
     const toggleChatSearchVisibility = () => {
         setIsChatSearchVisible(!isChatSearchVisible);
     };
+
     const toggleProfileSidebar = () => {
-        setIsProfileVisible(!isProfileVisible)
-    }
+        setIsProfileVisible(!isProfileVisible);
+    };
+
     const handleContactClick = (contactId) => {
         navigate(`/contacts/${contactId}`);
     };
+
+    const filteredContactList = contactList.filter(contact =>
+        contact.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (contact.contactId?.email && contact.contactId.email.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+
     const handleDeleteContact = async () => {
         try {
-            const response = await deleteContactMutation(userInformation._id);
-            console.log(response, "response ");
+            const response = await deleteContactMutation(userInformation._id).unwrap();
+            console.log(response, "Response");
+            toast.success("Contact deleted successfully");
         } catch (error) {
             console.error('Error deleting contact:', error);
+            toast.error("Failed to delete contact");
         }
     };
-  
-   
+
     return (
         <>
+            <ToastContainer />
             <div className="sidebar-group left-sidebar chat_sidebar">
                 <div id="chats" className="left-sidebar-wrap sidebar active slimscroll">
                     <div className="slimscroll">
                         <div className="mt-3">
-                            <Search handleSearch={handleSearch} onMyClick={handleSearchClick}  />
+                            <Search handleSearch={handleSearch} onMyClick={handleSearchClick} />
                             {filteredContactList.length > 0 ? (
                                 filteredContactList.map(contact => (
                                     <div onClick={() => handleContactClick(contact?.contactId?._id)} key={contact._id}>
@@ -84,6 +218,7 @@ const Chat = () => {
                                             name={contact?.userName}
                                             title={contact?.contactId?.email}
                                             image={images?.placeHolder}
+                                            searchQuery={searchQuery}
                                         />
                                     </div>
                                 ))
@@ -112,9 +247,9 @@ const Chat = () => {
                             </figure>
                             <div className="mt-1">
                                 <h5>{contact?.userName}</h5>
-                                <small className="online">
+                                {/* <small className="online">
                                     Online
-                                </small>
+                                </small> */}
                             </div>
                         </div>
                         <div className="chat-options">
@@ -156,339 +291,141 @@ const Chat = () => {
                     </div>
                     <div className="chat-body" >
                         <Scrollbars style={{ height: 700 }}>
-                            {/* <div className="messages">
-                            <div className="chats">
-                                <div className="chat-avatar">
-                                    <img src={images.avatarEight} className="rounded-circle dreams_chat" alt="image" />
-                                </div>
-                                <div className="chat-content">
-                                    <div className="message-content">
-                                        Hi James! What’s Up?
-                                        <div className="chat-time">
-                                            <div>
-                                                <div className="time"><FontAwesomeIcon icon={faClock} />10:00</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="chat-profile-name">
-                                        <h6>Doris Brown</h6>
-                                    </div>
-                                </div>
-                                <div className="chat-action-btns ms-3">
-                                    <Dropdown align="end">
-                                        <Dropdown.Toggle variant="" className="chat-action-col btn btn-link p-0 no-caret">
-                                            <FontAwesomeIcon icon={faEllipsisH} />
-                                        </Dropdown.Toggle>
+                            {messageData.map((msg, index) => (
+                                // <React.Fragment key={index}>
+                                //     <div className="messages">
+                                //         <div key={index} className={`chats ${msg.receiverId === userId ? '' : 'chats-right'}`}>                                                <div className="chat-avatar">
+                                //             {msg.receiverId === userId && (
+                                //                  <Avatar avatar={images?.avatarFour}/>
+                                //             )}    
+                                //         </div>
+                                //             <div className="chat-content">
+                                //                 <div className="message-content">
+                                //                     {msg.message}
+                                //                     <div className="chat-time">
+                                //                         <div>
+                                //                             <div className="time"><FontAwesomeIcon className='me-1' icon={faClock} />{moment(msg.createdAt).format('hh:mm A')}</div>
+                                //                         </div>
+                                //                     </div>
+                                //                 </div>
+                                //                 <div className="chat-profile-name">
+                                //                     <h6>{msg.senderId === userId ? 'You' : `${firstName} ${lastName}`}</h6>
+                                //                 </div>
+                                //             </div>
+                                //             {msg.senderId === userId && (
+                                //                 <Avatar avatar={images?.avatarEight}/>
+                                //             )}
+                                //             <div className={`chat-action-btns ${msg.senderId === userId ? "me-3" :"ms-3"}`}>
+                                //                 <Dropdown align="end">
+                                //                     <Dropdown.Toggle variant="" className="chat-action-col btn btn-link p-0 no-caret">
+                                //                         <FontAwesomeIcon icon={faEllipsisH} />
+                                //                     </Dropdown.Toggle>
+                                //                     <Dropdown.Menu>
+                                //                         <Dropdown.Item href="#">Copy<FontAwesomeIcon icon={faCopy} /></Dropdown.Item>
+                                //                         <Dropdown.Item href="#">Save<i className="material-icons">save</i></Dropdown.Item>
+                                //                         <Dropdown.Item href="#">Forward<FontAwesomeIcon icon={faShare} /></Dropdown.Item>
+                                //                         <Dropdown.Item href="#">Delete<FontAwesomeIcon icon={faTrashAlt} /></Dropdown.Item>
+                                //                     </Dropdown.Menu>
+                                //                 </Dropdown>
+                                //             </div>
+                                //         </div>
+                                //     </div>
+                                // </React.Fragment>
+                                <React.Fragment key={index}>
+                                    <div className="messages">
+                                        {msg.receiverId === userId ? (
+                                            <div className="chats">
+                                                <div className="chat-avatar">
+                                                    <img src={images.avatarEight} className="rounded-circle dreams_chat" alt="image" />
+                                                </div>
+                                                <div className="chat-content">
+                                                    <div className="message-content">
+                                                        {msg.message}
+                                                        <div className="chat-time">
+                                                            <div>
+                                                                <div className="time"><FontAwesomeIcon className='me-1' icon={faClock} />{moment(msg.createdAt).format('hh:mm A')}</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="chat-profile-name">
+                                                        <h6>{contact?.userName}</h6>
+                                                    </div>
+                                                </div>
+                                                <div className="chat-action-btns ms-3">
+                                                    <Dropdown align="end">
+                                                        <Dropdown.Toggle variant="" className="chat-action-col btn btn-link p-0 no-caret">
+                                                            <FontAwesomeIcon icon={faEllipsisH} />
+                                                        </Dropdown.Toggle>
 
-                                        <Dropdown.Menu>
-                                            <Dropdown.Item href="#">Copy<FontAwesomeIcon icon={faCopy} /> </Dropdown.Item>
-                                            <Dropdown.Item href="#">Save<i className="material-icons">save</i> </Dropdown.Item>
-                                            <Dropdown.Item href="#">Forward<FontAwesomeIcon icon={faShare} /> </Dropdown.Item>
-                                            <Dropdown.Item href="#">Delete<FontAwesomeIcon icon={faTrashAlt} /> </Dropdown.Item>
-                                        </Dropdown.Menu>
-                                    </Dropdown>
-                                </div>
-                            </div>
-                            <div className="chats chats-right">
-                                <div className="chat-content">
-                                    <div className="message-content">
-                                        Good morning, How are you? What about our next meeting?
-                                        <div className="chat-time">
-                                            <div>
-                                                <div className="time"><FontAwesomeIcon icon={faClock} /> 10:00</div>
+                                                        <Dropdown.Menu>
+                                                            <Dropdown.Item href="#">Copy<FontAwesomeIcon icon={faCopy} /></Dropdown.Item>
+                                                            <Dropdown.Item href="#">Save<i className="material-icons">save</i></Dropdown.Item>
+                                                            <Dropdown.Item href="#">Forward<FontAwesomeIcon icon={faShare} /></Dropdown.Item>
+                                                            <Dropdown.Item href="#">Delete<FontAwesomeIcon icon={faTrashAlt} /></Dropdown.Item>
+                                                        </Dropdown.Menu>
+                                                    </Dropdown>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                    <div className="chat-profile-name text-end">
-                                        <h6>Alexandr</h6>
-                                    </div>
-                                </div>
-                                <div className="chat-avatar">
-                                    <img src={images.avatarTwelve} className="rounded-circle dreams_chat" alt="image" />
-                                </div>
-                                <div className="chat-action-btns me-2">
-                                    <div className="chat-action-btns ms-3">
-                                        <Dropdown align="end">
-                                            <Dropdown.Toggle variant="" className="chat-action-col btn btn-link p-0 no-caret">
-                                                <FontAwesomeIcon icon={faEllipsisH} />
-                                            </Dropdown.Toggle>
+                                        ) : (
+                                            <div className="chats chats-right">
+                                                <div className="chat-content">
+                                                    <div className="message-content">
+                                                        {msg.message}
+                                                        <div className="chat-time">
+                                                            <div>
+                                                                <div className="time"><FontAwesomeIcon className='me-1' icon={faClock} />{moment(msg.createdAt).format('hh:mm A')}</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="chat-profile-name text-end">
+                                                        <h6>You</h6>
+                                                    </div>
+                                                </div>
+                                                <div className="chat-avatar">
+                                                    <img src={images.avatarTwelve} className="rounded-circle dreams_chat" alt="image" />
+                                                </div>
+                                                <div className="chat-action-btns me-2">
+                                                    <Dropdown align="end">
+                                                        <Dropdown.Toggle variant="" className="chat-action-col btn btn-link p-0 no-caret">
+                                                            <FontAwesomeIcon icon={faEllipsisH} />
+                                                        </Dropdown.Toggle>
 
-                                            <Dropdown.Menu>
-                                                <Dropdown.Item href="#">Copy<FontAwesomeIcon icon={faCopy} /> </Dropdown.Item>
-                                                <Dropdown.Item href="#">Save<i className="material-icons">save</i> </Dropdown.Item>
-                                                <Dropdown.Item href="#">Forward<FontAwesomeIcon icon={faShare} /> </Dropdown.Item>
-                                                <Dropdown.Item href="#">Delete<FontAwesomeIcon icon={faTrashAlt} /> </Dropdown.Item>
-                                            </Dropdown.Menu>
-                                        </Dropdown>
-                                    </div>
-                                    <div className="chat-read-col">
-                                        <span className="material-icons">done_all</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="chats">
-                                <div className="chat-avatar">
-                                    <img src={images.avatarEight} className="rounded-circle dreams_chat" alt="image" />
-                                </div>
-                                <div className="chat-content">
-                                    <div className="message-content">
-                                        Hi James! What’s Up?
-                                        <div className="chat-time">
-                                            <div>
-                                                <div className="time"><FontAwesomeIcon icon={faClock} />10:00</div>
+                                                        <Dropdown.Menu>
+                                                            <Dropdown.Item href="#">Copy<FontAwesomeIcon icon={faCopy} /></Dropdown.Item>
+                                                            <Dropdown.Item href="#">Save<i className="material-icons">save</i></Dropdown.Item>
+                                                            <Dropdown.Item href="#">Forward<FontAwesomeIcon icon={faShare} /></Dropdown.Item>
+                                                            <Dropdown.Item href="#">Delete<FontAwesomeIcon icon={faTrashAlt} /></Dropdown.Item>
+                                                        </Dropdown.Menu>
+                                                    </Dropdown>
+                                                    <div className={`chat-read-col ${msg.isSeen ? "text-success" : "text-secondary"}`}>
+                                                        {/* <span className="material-icons text-success">done_all</span> */}
+                                                        <FontAwesomeIcon icon={faCheckDouble} />
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
+                                        )}
                                     </div>
-                                    <div className="chat-profile-name">
-                                        <h6>Doris Brown</h6>
-                                    </div>
-                                </div>
-                                <div className="chat-action-btns ms-3">
-                                    <div className="chat-action-btns ms-3">
-                                        <Dropdown align="end">
-                                            <Dropdown.Toggle variant="" className="chat-action-col btn btn-link p-0 no-caret">
-                                                <FontAwesomeIcon icon={faEllipsisH} />
-                                            </Dropdown.Toggle>
-
-                                            <Dropdown.Menu>
-                                                <Dropdown.Item href="#">Copy<FontAwesomeIcon icon={faCopy} /> </Dropdown.Item>
-                                                <Dropdown.Item href="#">Save<i className="material-icons">save</i> </Dropdown.Item>
-                                                <Dropdown.Item href="#">Forward<FontAwesomeIcon icon={faShare} /> </Dropdown.Item>
-                                                <Dropdown.Item href="#">Delete<FontAwesomeIcon icon={faTrashAlt} /> </Dropdown.Item>
-                                            </Dropdown.Menu>
-                                        </Dropdown>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="chats chats-right">
-                                <div className="chat-content">
-                                    <div className="message-content">
-                                        Good morning, How are you? What about our next meeting?
-                                        <div className="chat-time">
-                                            <div>
-                                                <div className="time"><FontAwesomeIcon icon={faClock} /> 10:00</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="chat-profile-name text-end">
-                                        <h6>Alexandr</h6>
-                                    </div>
-                                </div>
-                                <div className="chat-avatar">
-                                    <img src={images.avatarTwelve} className="rounded-circle dreams_chat" alt="image" />
-                                </div>
-                                <div className="chat-action-btns me-2">
-                                    <div className="chat-action-btns ms-3">
-                                        <Dropdown align="end">
-                                            <Dropdown.Toggle variant="" className="chat-action-col btn btn-link p-0 no-caret">
-                                                <FontAwesomeIcon icon={faEllipsisH} />
-                                            </Dropdown.Toggle>
-
-                                            <Dropdown.Menu>
-                                                <Dropdown.Item href="#">Copy<FontAwesomeIcon icon={faCopy} /> </Dropdown.Item>
-                                                <Dropdown.Item href="#">Save<i className="material-icons">save</i> </Dropdown.Item>
-                                                <Dropdown.Item href="#">Forward<FontAwesomeIcon icon={faShare} /> </Dropdown.Item>
-                                                <Dropdown.Item href="#">Delete<FontAwesomeIcon icon={faTrashAlt} /> </Dropdown.Item>
-                                            </Dropdown.Menu>
-                                        </Dropdown>
-                                    </div>
-                                    <div className="chat-read-col">
-                                        <span className="material-icons">done_all</span>
-                                    </div>
-                                </div>
-                            </div>
-                                <div className="chats">
-                                <div className="chat-avatar">
-                                    <img src={images.avatarEight} className="rounded-circle dreams_chat" alt="image" />
-                                </div>
-                                <div className="chat-content">
-                                    <div className="message-content">
-                                        Hi James! What’s Up?
-                                        <div className="chat-time">
-                                            <div>
-                                                <div className="time"><FontAwesomeIcon icon={faClock} />10:00</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="chat-profile-name">
-                                        <h6>Doris Brown</h6>
-                                    </div>
-                                </div>
-                                <div className="chat-action-btns ms-3">
-                                    <div className="chat-action-btns ms-3">
-                                        <Dropdown align="end">
-                                            <Dropdown.Toggle variant="" className="chat-action-col btn btn-link p-0 no-caret">
-                                                <FontAwesomeIcon icon={faEllipsisH} />
-                                            </Dropdown.Toggle>
-
-                                            <Dropdown.Menu>
-                                                <Dropdown.Item href="#">Copy<FontAwesomeIcon icon={faCopy} /> </Dropdown.Item>
-                                                <Dropdown.Item href="#">Save<i className="material-icons">save</i> </Dropdown.Item>
-                                                <Dropdown.Item href="#">Forward<FontAwesomeIcon icon={faShare} /> </Dropdown.Item>
-                                                <Dropdown.Item href="#">Delete<FontAwesomeIcon icon={faTrashAlt} /> </Dropdown.Item>
-                                            </Dropdown.Menu>
-                                        </Dropdown>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="chats chats-right">
-                                <div className="chat-content">
-                                    <div className="message-content">
-                                        Good morning, How are you? What about our next meeting?
-                                        <div className="chat-time">
-                                            <div>
-                                                <div className="time"><FontAwesomeIcon icon={faClock} /> 10:00</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="chat-profile-name text-end">
-                                        <h6>Alexandr</h6>
-                                    </div>
-                                </div>
-                                <div className="chat-avatar">
-                                    <img src={images.avatarTwelve} className="rounded-circle dreams_chat" alt="image" />
-                                </div>
-                                <div className="chat-action-btns me-2">
-                                    <div className="chat-action-btns ms-3">
-                                        <Dropdown align="end">
-                                            <Dropdown.Toggle variant="" className="chat-action-col btn btn-link p-0 no-caret">
-                                                <FontAwesomeIcon icon={faEllipsisH} />
-                                            </Dropdown.Toggle>
-
-                                            <Dropdown.Menu>
-                                                <Dropdown.Item href="#">Copy<FontAwesomeIcon icon={faCopy} /> </Dropdown.Item>
-                                                <Dropdown.Item href="#">Save<i className="material-icons">save</i> </Dropdown.Item>
-                                                <Dropdown.Item href="#">Forward<FontAwesomeIcon icon={faShare} /> </Dropdown.Item>
-                                                <Dropdown.Item href="#">Delete<FontAwesomeIcon icon={faTrashAlt} /> </Dropdown.Item>
-                                            </Dropdown.Menu>
-                                        </Dropdown>
-                                    </div>
-                                    <div className="chat-read-col">
-                                        <span className="material-icons">done_all</span>
-                                    </div>
-                                </div>
-                            </div>  
-                              <div className="chats">
-                                <div className="chat-avatar">
-                                    <img src={images.avatarEight} className="rounded-circle dreams_chat" alt="image" />
-                                </div>
-                                <div className="chat-content">
-                                    <div className="message-content">
-                                        Hi James! What’s Up?
-                                        <div className="chat-time">
-                                            <div>
-                                                <div className="time"><FontAwesomeIcon icon={faClock} />10:00</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="chat-profile-name">
-                                        <h6>Doris Brown</h6>
-                                    </div>
-                                </div>
-                                <div className="chat-action-btns ms-3">
-                                    <div className="chat-action-btns ms-3">
-                                        <Dropdown align="end">
-                                            <Dropdown.Toggle variant="" className="chat-action-col btn btn-link p-0 no-caret">
-                                                <FontAwesomeIcon icon={faEllipsisH} />
-                                            </Dropdown.Toggle>
-
-                                            <Dropdown.Menu>
-                                                <Dropdown.Item href="#">Copy<FontAwesomeIcon icon={faCopy} /> </Dropdown.Item>
-                                                <Dropdown.Item href="#">Save<i className="material-icons">save</i> </Dropdown.Item>
-                                                <Dropdown.Item href="#">Forward<FontAwesomeIcon icon={faShare} /> </Dropdown.Item>
-                                                <Dropdown.Item href="#">Delete<FontAwesomeIcon icon={faTrashAlt} /> </Dropdown.Item>
-                                            </Dropdown.Menu>
-                                        </Dropdown>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="chats chats-right">
-                                <div className="chat-content">
-                                    <div className="message-content">
-                                        Good morning, How are you? What about our next meeting?
-                                        <div className="chat-time">
-                                            <div>
-                                                <div className="time"><FontAwesomeIcon icon={faClock} /> 10:00</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="chat-profile-name text-end">
-                                        <h6>Alexandr</h6>
-                                    </div>
-                                </div>
-                                <div className="chat-avatar">
-                                    <img src={images.avatarTwelve} className="rounded-circle dreams_chat" alt="image" />
-                                </div>
-                                <div className="chat-action-btns me-2">
-                                    <div className="chat-action-btns ms-3">
-                                        <Dropdown align="end">
-                                            <Dropdown.Toggle variant="" className="chat-action-col btn btn-link p-0 no-caret">
-                                                <FontAwesomeIcon icon={faEllipsisH} />
-                                            </Dropdown.Toggle>
-
-                                            <Dropdown.Menu>
-                                                <Dropdown.Item href="#">Copy<FontAwesomeIcon icon={faCopy} /> </Dropdown.Item>
-                                                <Dropdown.Item href="#">Save<i className="material-icons">save</i> </Dropdown.Item>
-                                                <Dropdown.Item href="#">Forward<FontAwesomeIcon icon={faShare} /> </Dropdown.Item>
-                                                <Dropdown.Item href="#">Delete<FontAwesomeIcon icon={faTrashAlt} /> </Dropdown.Item>
-                                            </Dropdown.Menu>
-                                        </Dropdown>
-                                    </div>
-                                    <div className="chat-read-col">
-                                        <span className="material-icons">done_all</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="chat-line">
-                                <span className="chat-date">Today</span>
-                            </div>
-                            <div className="chats chats-right">
-                                <div className="chat-content">
-                                    <div className="message-content">
-                                        Wow Thats Great
-                                        <div className="chat-time">
-                                            <div>
-                                                <div className="time"><FontAwesomeIcon icon={faClock} />10:02</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="chat-profile-name text-end">
-                                        <h6>Alexandr</h6>
-                                    </div>
-                                </div>
-                                <div className="chat-avatar">
-                                    <img src={images.avatarEight} className="rounded-circle dreams_chat" alt="image" />
-                                </div>
-                                <div className="chat-action-btns me-2">
-                                    <div className="chat-action-col">
-                                        <Link className="#" to="#" data-bs-toggle="dropdown">
-                                            <FontAwesomeIcon icon={faEllipsisH} />
-                                        </Link>
-                                        <div className="dropdown-menu dropdown-menu-end">
-                                            <Link to="#" className="dropdown-item dream_profile_menu">Copy <span ><i className="far fa-copy"></i></span></Link>
-                                            <Link to="#" className="dropdown-item">Save <span className="material-icons">save</span></Link>
-                                            <Link to="#" className="dropdown-item">Forward <span><i className="fas fa-share"></i></span></Link>
-                                            <Link to="#" className="dropdown-item">Delete <span><i className="far fa-trash-alt"></i></span></Link>
-                                        </div>
-                                    </div>
-                                    <div className="chat-read-col">
-                                        <span className="material-icons">done_all</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div> */}
+                                </React.Fragment>
+                            ))}
                         </Scrollbars>
                     </div>
-                </div>
+                </div >
                 <div className="chat-footer">
-                    <form>
+                    <form onSubmit={sendMessage}>
                         <div className="smile-col">
                             <Link to="#"><FontAwesomeIcon icon={faSmile} /></Link>
                         </div>
                         <div className="attach-col">
                             <Link to="#"><FontAwesomeIcon icon={faPaperclip} /></Link>
                         </div>
-                        <input type="text" className=" chat_form" placeholder="Enter Message....." />
+
+                        <input
+                            type="text"
+                            className=" chat_form"
+                            placeholder="Enter Message....."
+                            value={currentMessage}
+                            onChange={handleMessageChange} />
+
                         <div className="form-buttons">
                             <button className="btn send-btn" type="submit">
                                 <span className="material-icons">send</span>
@@ -499,13 +436,13 @@ const Chat = () => {
                         </div>
                     </form>
                 </div>
-            </div>
+            </div >
             {isProfileVisible &&
                 <RightSidebar
-                    userName={contact?.userName}
+                    contactId={contactId}
+                    username={contact?.userName}
                     userImage={images?.placeHolder}
                     userBio={contact?.bio}
-                    userPhoneNumber={userInformation?.phoneNUmber}
                     userEmail={userInformation?.email}
                     userFacebook={userSocialLinks?.facebook}
                     userTwitter={userSocialLinks?.twitter}

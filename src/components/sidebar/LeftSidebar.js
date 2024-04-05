@@ -59,15 +59,10 @@ const Sidebar = () => {
         setTheme(currentTheme => currentTheme === 'darkmode' ? 'lightmode' : 'darkmode');
     };
     const handleLogout = async () => {
-        // localStorage.removeItem('accessToken');
-        // localStorage.removeItem('user');
-        // navigate("/login")
-        // toast("Logout Success");
         try {
             if (userId) {
-                await logout(userId)//.unwrap();
-                localStorage.removeItem('accessToken'); // Clear the access token on successful logout
-                localStorage.removeItem('user');
+                await logout(userId)
+                localStorage.removeItem('accessToken');
                 navigate("/login")
                 toast("Logout Success");
             }
@@ -86,18 +81,19 @@ const Sidebar = () => {
         email: Yup.string().email('Invalid email address').required('Email is required')
     });
 
-    const addContactSubmit = async (values, { setSubmitting }) => {
+    const addContactSubmit = async (values, { setSubmitting, resetForm }) => {
         try {
             await addContact(values).unwrap();
-            console.log(values);
             setModalOpen(false);
+            resetForm();
+            toast.success("Contact added successfully");
         } catch (error) {
-            console.error('Error adding contact:', error);
+            toast.error("Failed to add contact. Please try again.");
         } finally {
             setSubmitting(false);
         }
     };
-    
+
 
     return (
 
@@ -113,7 +109,7 @@ const Sidebar = () => {
                             <li><Link to="/contacts" className="chat-unread pink"><GroupIcon /></Link></li>
                             <li><Link to="/settings" className="chat-unread"><SettingsIcon /></Link></li>
 
-                             {/*<li><Link to="/" className="chat-unread"><LibraryBooksIcon /></Link></li>
+                            {/*<li><Link to="/" className="chat-unread"><LibraryBooksIcon /></Link></li>
                             <li><Link to="/" className="chat-unread"><CallIcon /></Link></li>
                             */}
                         </ul>
@@ -121,8 +117,8 @@ const Sidebar = () => {
                     <div className="bottom-menus">
                         <ul>
                             {/* <li><Link to="/" className="add-new-group"><GroupAddIcon /></Link></li>*/}
-                            <li><Link to="/" className="add-contacts-btn" onClick={openModal}><FontAwesomeIcon icon={faPlus} /></Link></li>
-                            <li><span to="/" onClick={() => toggleClass()} className="dark-mode-toggle"><DarkModeIcon /></span></li>
+                            <li><Link className="add-contacts-btn" onClick={openModal}><FontAwesomeIcon icon={faPlus} /></Link></li>
+                            <li><span onClick={() => toggleClass()} className="dark-mode-toggle"><DarkModeIcon /></span></li>
                             <li>
                                 <Dropdown>
                                     <Dropdown.Toggle variant="" className="chat-profile-icon no-caret">

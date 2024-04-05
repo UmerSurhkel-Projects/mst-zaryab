@@ -30,7 +30,6 @@ const Register = () => {
         try {
             const response = await register(values).unwrap();
             console.log('User registered:', response);
-            // Show success popup
             Swal.fire({
                 icon: 'success',
                 title: 'Registration Successful!',
@@ -38,10 +37,28 @@ const Register = () => {
             });
         } catch (err) {
             console.error('Register error:', err);
+            // Check if the error message indicates an already registered email
+            if (err?.data?.message === "user already exists") {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Registration Failed',
+                    text: 'This email is already registered. Please try to log in or use another email.',
+                    confirmButtonText: 'OK',
+                });
+            } else {
+                // Handle other errors
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Registration Failed',
+                    text: 'An unexpected error occurred. Please try again later.',
+                    confirmButtonText: 'OK',
+                });
+            }
         } finally {
             setSubmitting(false);
         }
     };
+    
     
 
     return (
@@ -98,9 +115,6 @@ const Register = () => {
                                         </Form>
                                     )}
                                 </Formik>
-                            </div>
-                            <div className="back-btn-col text-center">
-                                <Link to="/"><span><FontAwesomeIcon icon={faCaretLeft} /></span> Back</Link>
                             </div>
                         </div>
 

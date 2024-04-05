@@ -24,6 +24,7 @@ export const authApi = createApi({
                 method: 'POST',
                 body: credentials,
             }),
+            invalidatesTags: [{ type: 'User', id: 'LIST' }],
         }),
         // This defines a mutation called Register.
         register: builder.mutation({
@@ -35,6 +36,8 @@ export const authApi = createApi({
                     'Content-Type': 'application/json',
                 },
             }),
+            // Register might add a new user, so we invalidate to refetch user-related data
+            invalidatesTags: [{ type: 'User', id: 'LIST' }],
         }),
          // This defines a mutation called Logout
         logout: builder.mutation({
@@ -42,6 +45,8 @@ export const authApi = createApi({
                 url: `user/logout/${id}`,
                 method: 'GET',
             }),
+             // Logout changes user state, so we invalidate user tags
+             invalidatesTags: [{ type: 'User' }],
         }),
         // This defines a mutation called delete the account
         deleteAccount: builder.mutation({
@@ -49,6 +54,7 @@ export const authApi = createApi({
                 url: '/user/delete-account',
                 method: 'DELETE',
             }),
+            invalidatesTags: [{ type: 'User' }],
         }),
         // This defines a mutation called verify email
         verifyEmail: builder.mutation({
@@ -73,6 +79,8 @@ export const authApi = createApi({
                 method: 'PUT',
                 body: passwordData,
             }),
+            // Changing password might affect user data, so we invalidate User tag
+            invalidatesTags: [{ type: 'User', id: 'LIST' }],
         }),
         // This defines a mutation for two-step verification setup or update
         twoStepVerification: builder.mutation({
@@ -81,14 +89,22 @@ export const authApi = createApi({
                 method: 'PUT',
                 body: verificationData,
             }),
+            // After setting up or updating two-step verification, user profile data might change
+            invalidatesTags: ['UserProfile'],
+            // Optionally, if the mutation provides specific user data, you can use providesTags too
+            providesTags: (result, error, arg) => [{ type: 'User', id: arg.userId }],
         }),
-        // This defines a mutation for sned OTP verification
+        
         verifyOtp: builder.mutation({
             query: (verificationData) => ({
                 url: 'user/verify-otp',
                 method: 'PUT',
                 body: verificationData, // Include the body in the request
             }),
+            // Verification might update user's verification status or related data
+            invalidatesTags: ['UserVerification', 'UserProfile'],
+            // If OTP verification directly affects a user's entity, specify it here
+            providesTags: (result, error, arg) => [{ type: 'User', id: arg.userId }],
         }),
     }),
 });

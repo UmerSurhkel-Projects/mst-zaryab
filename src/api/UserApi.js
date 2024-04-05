@@ -21,17 +21,16 @@ export const userApi = createApi({
         getUserProfile: builder.query({
             query: () => 'user/get',
             providesTags: [{ type: 'User', id: 'LIST' }],
-            staleTime: 0, // Set staleTime to 0 for immediate refresh when component re-renders
-            refetchOnMount: true, // Automatically refetch data when the component is mounted
         }),
         updateUserProfile: builder.mutation({
             query: (formData) => ({
                 url: 'user/update',
                 method: 'PUT',
                 body: formData,
-                invalidatesTags: [{ type: 'User', id: 'LIST' }],
             }),
+            invalidatesTags: [{ type: 'User', id: 'LIST' }],
         }),
+        
     }),
 });
 

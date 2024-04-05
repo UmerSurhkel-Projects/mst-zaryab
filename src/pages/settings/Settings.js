@@ -5,9 +5,12 @@ import BreadCrumb from '../../components/breadcrumb/BreadCrumb'
 import Search from '../../components/search/Search'
 import { Scrollbars } from 'react-custom-scrollbars';
 import { useNavigate } from 'react-router-dom';
-
-const Settings = ({ props }) => {
+import React, { useState } from 'react';
+const Settings = () => {
     const navigate = useNavigate();
+    const [twoStepVerificationFlag,setTwoStepVerificationFlag]=useState(false);
+
+
     const logoutHandler = () => {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('user');
@@ -25,20 +28,19 @@ const Settings = ({ props }) => {
                                 button="Logout"
                                 onClick={logoutHandler}
                             />
-                            <Search />
                             <div class="settings-option">
                                 <a href="#" class="user-list-item">Edit Settings</a>
                             </div>
 
                             <Scrollbars style={{ height: 900 }}>
                                 <ProfileCard />
-                                <SettingsCard />
+                                <SettingsCard setState={setTwoStepVerificationFlag} />
                             </Scrollbars>
                         </div>
                     </div>
                 </div>
                 <Scrollbars style={{ height: 900, overflowX: 'hidden' }}>
-                    <UpdateUserInfo />
+                    <UpdateUserInfo  twoStepVerificationFlag={twoStepVerificationFlag} />
                 </Scrollbars>
 
 

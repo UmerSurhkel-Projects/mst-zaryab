@@ -1,35 +1,34 @@
 import { useEffect, useState } from 'react';
-import { Formik, Form, Field } from 'formik';
-import { useUpdateUserProfileMutation, useGetUserProfileQuery } from '../../api/UserApi';
-import { useChangePasswordMutation, useVerifyOtpMutation, useTwoStepVerificationMutation, useDeleteAccountMutation } from '../../api/AuthApi';
-import { useNavigate, Link } from 'react-router-dom';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import * as Yup from 'yup';
+import { useNavigate } from 'react-router-dom';
 import { Tab, Tabs } from 'react-bootstrap';
-import VerificationModal from '../security/VerificationModal';
-import OtpModal from '../security/OtpModal';
 import { ToastContainer, toast } from 'react-toastify';
 import Swal from 'sweetalert2';
+import { useUpdateUserProfileMutation, useGetUserProfileQuery } from '../../api/UserApi';
+import { useChangePasswordMutation, useVerifyOtpMutation, useTwoStepVerificationMutation, useDeleteAccountMutation } from '../../api/AuthApi';
+import VerificationModal from '../security/VerificationModal';
+import OtpModal from '../security/OtpModal';
 
+const UpdateUserInfo = ({ twoStepVerificationFlag }) => {
+    const [showOtpModal, setShowOtpModal] = useState(false);
 
-const UpdateUserInfo = () => {
     const [twoStepVerification] = useTwoStepVerificationMutation();
     const [updateUserProfile, { isSuccess }] = useUpdateUserProfileMutation();
-    const { data } = useGetUserProfileQuery();
+    const { data: userProfileData } = useGetUserProfileQuery();
     const [changePassword, { data: changePasswordData, isSuccess: isPasswordChangeSuccess, error: changePasswordError }] = useChangePasswordMutation();
     const [verifyOtp] = useVerifyOtpMutation();
     const [deleteAccount] = useDeleteAccountMutation();
     const [showVerificationModal, setShowVerificationModal] = useState(false);
-    const [showOtpModal, setShowOtpModal] = useState(false);
     const [phoneNumber, setPhoneNumber] = useState('');
     const [verificationType, setVerificationType] = useState(null);
-    const userProfile = data?.user;
+    const userProfile = userProfileData?.user;
     const navigate = useNavigate();
     const [selectedFile, setSelectedFile] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(userProfile?.imageUrl || '');
-    const [initialTwoFactorAuthenticationValues, setInitialTwoFactorAuthenticationValues] = useState({
-        sendOtpToEmail: localStorage.getItem('twoFactorAuthentication') === 'email',
-        sendOtpToPhone: localStorage.getItem('twoFactorAuthentication') === 'phone',
-        verified: false,
-    });
+    const [checkEmail, setCheckEmail] = useState(false)
+    const [checkPhone, setCheckPhone] = useState(false)
+    const [activeKey, setActiveKey] = useState('general');
 
     const initialValues = userProfile ? {
         firstName: userProfile.firstName,
@@ -45,6 +44,56 @@ const UpdateUserInfo = () => {
         linkedin: userProfile.socialLinks?.linkedin,
         youtube: userProfile.socialLinks?.youtube,
     } : {};
+    const userProfileValidationSchema = Yup.object().shape({
+        firstName: Yup.string().required('First Name is required'),
+        lastName: Yup.string().required('Last Name is required'),
+        phoneNumber: Yup.string().matches(/^[0-9]+$/, "Phone number must be only digits")
+            .min(10, 'Phone number must be at least 10 digits')
+            .required('Phone Number is required'),
+        nickName: Yup.string().nullable(),
+        location: Yup.string().required('Location is required'),
+        bio: Yup.string().max(500, 'Bio cannot exceed 500 characters'),
+        facebook: Yup.string().url('Please enter a valid URL').nullable(),
+        twitter: Yup.string().url('Please enter a valid URL').nullable(),
+        instagram: Yup.string().url('Please enter a valid URL').nullable(),
+    });
+    useEffect(() => {
+        console.log("userProfile", userProfile);
+        if (userProfileData) {
+            const isEmail = userProfile.twoStepVer.byEmail;
+            const isPhone = userProfile.twoStepVer.byPhone;
+            setCheckEmail(isEmail);
+            setCheckPhone(isPhone);
+        }
+
+    }, [userProfile]);
+    const passwordValidationSchema = Yup.object().shape({
+        currentPassword: Yup.string()
+            .min(6, 'Password must be at least 6 characters')
+            .required('Current password is required'),
+        newPassword: Yup.string()
+            .min(6, 'Password must be at least 6 characters')
+            .required('New password is required'),
+        confirmPassword: Yup.string()
+            .oneOf([Yup.ref('newPassword'), null], 'Passwords must match')
+            .required('Confirm password is required'),
+    });
+    const onSubmitPasswordChange = async (values, { setSubmitting, resetForm }) => {
+        try {
+            await changePassword({
+                currentPassword: values.currentPassword,
+                newPassword: values.newPassword,
+                confirmPassword: values.confirmPassword,
+            }).unwrap();
+
+            toast.success('Password changed successfully');
+            resetForm();
+        } catch (error) {
+            toast.error('Failed to change password');
+        } finally {
+            setSubmitting(false);
+        }
+    };
     useEffect(() => {
         if (!selectedFile) {
             setPreviewUrl('');
@@ -70,48 +119,41 @@ const UpdateUserInfo = () => {
         try {
             const response = await updateUserProfile(values).unwrap();
             console.log("Update Response:", response);
+            toast.success("Profile updated successfully!");
+            resetForm();
         } catch (error) {
             console.error("Update Error:", error);
-            alert(error.message || 'Failed to update profile');
+            toast.error(error.message || 'Failed to update profile');
         } finally {
             setSubmitting(false);
         }
     };
-    const handleTwoFactorSubmit = async (values, { setSubmitting }) => {
-        setSubmitting(true);
-        let currentVerificationType = null;
-        if (values.sendOtpToPhone) {
-            currentVerificationType = 1; // For phone verification
-        } else if (values.sendOtpToEmail) {
-            currentVerificationType = 0;
-            // Assuming your verifyOtp API needs an email address and you have it available
-            const emailUser = userProfile?.email; // Or however you access the user's email
-
-            try {
-                const payload = {
-                    emailUser,
-                    sendOtpToEmail: values.sendOtpToEmail,
-                    twoStepVerType: currentVerificationType,
-                };
-                const response = await twoStepVerification(payload).unwrap();
-                console.log(response, "response of verify otp");
-                // Handle successful OTP request (maybe show a notification or proceed directly)
-                toast("OTP sent to email. Please verify.");
-                setShowOtpModal(true); // Show the OTP modal if you want user to enter OTP
-            } catch (error) {
-                console.error("Error sending OTP to email:", error);
-                // Handle error (e.g., show an error notification)
-                toast.error("Failed to send OTP to email.");
+    const updateAuthPhone = async () => {
+        let currentVerificationType = 1;
+        setVerificationType(currentVerificationType);
+        setShowVerificationModal(true);
+    };
+    const updateAuthEmail = async (e) => {
+        e.preventDefault();
+        let currentVerificationType = 0;
+        const emailUser = userProfile?.email;
+        try {
+            const payload = {
+                emailUser,
+                sendOtpToEmail: !checkEmail,
+                twoStepVerType: currentVerificationType,
+            };
+            const response = await twoStepVerification(payload).unwrap();
+            console.log('---------------------->>>>>>>>>>', response,);
+            if (response.success) {
+                console.log("innn show otp modal", showOtpModal);
+                setShowOtpModal(() => true);
+                console.log("Nowwwwwww otp modal", showOtpModal);
             }
+        } catch (error) {
+            console.error("Error sending OTP to email:", error);
+            toast.error("Failed to send OTP to email.");
         }
-
-        if (currentVerificationType !== null) {
-            setVerificationType(currentVerificationType);
-            setShowVerificationModal(true);
-        }
-
-        localStorage.setItem("twoFactorAuthentication", currentVerificationType === 1 ? "phone" : "email");
-        setSubmitting(false);
     };
     const handlePhoneVerification = async (phone) => {
         setPhoneNumber(phone);
@@ -119,28 +161,29 @@ const UpdateUserInfo = () => {
         setShowOtpModal(true);
     };
     const handleOtpVerification = async (otp) => {
-        setShowOtpModal(false);
         const payload = { otp };
 
         if (verificationType === 0) {
             // Email verification
-            payload.value = true;
+            payload.value = !checkEmail
         } else {
             // Phone verification
-            payload.value = true;
+            payload.value = !checkPhone
         }
 
         try {
-            await verifyOtp(payload);
+            const response = await verifyOtp(payload);
+            console.log('--------', response);
+            if (response.data.success) {
 
-            // Set the verified property to true
-            setInitialTwoFactorAuthenticationValues({
-                ...initialTwoFactorAuthenticationValues,
-                verified: true,
-            });
+                setCheckEmail(response.data.user.twoStepVer.byEmail);
+                userProfile.twoStepVer.byEmail = response.data.user.twoStepVer.byEmail;
+                setCheckPhone(response.data.user.twoStepVer.byPhone);
+                userProfile.twoStepVer.byPhone = response.data.user.twoStepVer.byPhone;
+
+            }
         } catch (error) {
             console.error("OTP Verification error:", error);
-            // Handle error (e.g., show an error notification)
             toast.error("OTP verification failed.");
         }
     };
@@ -175,7 +218,6 @@ const UpdateUserInfo = () => {
             <ToastContainer />
             <div className="chat settings-main pt-2" id="middle">
                 <div className="slimscroll">
-
                     <div className="page-header d-flex align-items-center">
                         <div className="me-3 d-md-block d-lg-none">
                             <a className="text-muted px-0 left_side" href="#">
@@ -184,116 +226,140 @@ const UpdateUserInfo = () => {
                         </div>
                         <div>
                             <h5>SETTINGS</h5>
-                            <p>Last Update your profile: 29 Aug 2020</p>
                         </div>
                     </div>
 
                     <div className="settings-tab my-4">
                         <div className="tab-content settings-form">
-                            <Tabs defaultActiveKey="general" id="uncontrolled-tab-example" className="mb-3">
+                            <Tabs
+                                id="controlled-tab-example"
+                                activeKey={activeKey}
+                                onSelect={(k) => setActiveKey(k)}
+                                className="mb-3">
 
                                 <Tab eventKey="general" title="General Settings">
-
                                     <div className="settings-header">
                                         <h5>Account Settings</h5>
                                         <p>Update your account details</p>
                                     </div>
                                     <div className="settings-control p-3">
                                         <div className="form-col form-body">
-                                            <Formik initialValues={initialValues} onSubmit={onSubmit} enableReinitialize={true}>
-                                                {({ setFieldValue }) => (
-                                                    <Form>
+                                            <Formik
+                                                initialValues={initialValues}
+                                                onSubmit={onSubmit}
+                                                enableReinitialize={true}
+                                                validationSchema={userProfileValidationSchema}
+                                            >
+                                                {({ errors, touched, setFieldValue, handleSubmit, isSubmitting }) => (
+                                                    <Form onSubmit={handleSubmit}>
                                                         <div className="row">
+                                                            {/* First Name */}
                                                             <div className="col-md-6 col-xl-4">
                                                                 <div className="form-group">
                                                                     <label>First Name</label>
-                                                                    <Field name="firstName" type="text" className={`form-control form-control-lg group_formcontrol`} />
+                                                                    <Field name="firstName" type="text" className={`form-control form-control-lg ${errors.firstName && touched.firstName ? ' is-invalid' : ''}`} />
+                                                                    <ErrorMessage name="firstName" component="div" className="invalid-feedback" />
                                                                 </div>
                                                             </div>
+
+                                                            {/* Last Name */}
                                                             <div className="col-md-6 col-xl-4">
                                                                 <div className="form-group">
                                                                     <label>Last Name</label>
-                                                                    <Field name="lastName" type="text" className={`form-control form-control-lg group_formcontrol `} />
+                                                                    <Field name="lastName" type="text" className={`form-control form-control-lg ${errors.lastName && touched.lastName ? ' is-invalid' : ''}`} />
+                                                                    <ErrorMessage name="lastName" component="div" className="invalid-feedback" />
                                                                 </div>
                                                             </div>
+
+                                                            {/* Phone Number */}
                                                             <div className="col-md-6 col-xl-4">
                                                                 <div className="form-group">
                                                                     <label>Phone Number</label>
-                                                                    <Field name="phoneNumber" type="text" className={`form-control form-control-lg group_formcontrol `} />
+                                                                    <Field name="phoneNumber" type="text" className={`form-control form-control-lg ${errors.phoneNumber && touched.phoneNumber ? ' is-invalid' : ''}`} />
+                                                                    <ErrorMessage name="phoneNumber" component="div" className="invalid-feedback" />
                                                                 </div>
                                                             </div>
+
+                                                            {/* Nickname */}
                                                             <div className="col-md-6 col-xl-4">
                                                                 <div className="form-group">
                                                                     <label>Nick name <span>(Optional)</span></label>
-                                                                    <Field name="nickName" type="text" className="form-control form-control-lg group_formcontrol" />
+                                                                    <Field name="nickName" type="text" className="form-control form-control-lg" />
+                                                                    {/* No validation schema for nickName assuming it's optional and has no rules */}
                                                                 </div>
                                                             </div>
+
+                                                            {/* Profile Picture */}
                                                             <div className="col-md-6 col-xl-4">
                                                                 <div className="form-group">
                                                                     <label>Choose profile picture</label>
-                                                                    <div className="custom-input-file form-control form-control-lg group_formcontrol">
-                                                                        <input id="profilePicture" name="profilePicture" type="file" onChange={handleImageChange} />
+                                                                    <div className="custom-input-file form-control form-control-lg">
+                                                                        <input
+                                                                            id="profilePicture"
+                                                                            name="profilePicture"
+                                                                            type="file"
+                                                                            onChange={(event) => {
+                                                                                setFieldValue("profilePicture", event.currentTarget.files[0]);
+                                                                                handleImageChange(event);
+                                                                            }}
+                                                                        />
                                                                         <span className="browse-btn">Browse File</span>
                                                                     </div>
                                                                 </div>
                                                             </div>
+
+                                                            {/* Location */}
                                                             <div className="col-md-6 col-xl-4">
                                                                 <div className="form-group">
                                                                     <label>Location</label>
-                                                                    <Field name="location" type="text" className={`form-control form-control-lg group_formcontrol`} />
+                                                                    <Field name="location" type="text" className={`form-control form-control-lg ${errors.location && touched.location ? ' is-invalid' : ''}`} />
+                                                                    <ErrorMessage name="location" component="div" className="invalid-feedback" />
                                                                 </div>
                                                             </div>
+
+                                                            {/* Bio */}
                                                             <div className="col-md-12 col-xl-12">
                                                                 <div className="form-group">
                                                                     <label>Bio</label>
-                                                                    <Field name="bio" as="textarea" className="form-control form-control-lg group_formcontrol" />
+                                                                    <Field name="bio" as="textarea" className={`form-control form-control-lg ${errors.bio && touched.bio ? ' is-invalid' : ''}`} />
+                                                                    <ErrorMessage name="bio" component="div" className="invalid-feedback" />
                                                                 </div>
                                                             </div>
+                                                            <div className="social-settings">
+                                                                <h4>Social Links</h4>
+                                                            </div>
+                                                            <div className="col-md-6 col-xl-4">
+                                                                <div className="form-group">
+                                                                    <Field name="facebook" type="text" placeholder="Facebook Link" className={`form-control form-control-lg group_formcontrol mb-3 ${errors.facebook && touched.facebook ? ' is-invalid' : ''}`} />
+                                                                    <ErrorMessage name="facebook" component="div" className="invalid-feedback" />
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="col-md-6 col-xl-4">
+                                                                <div className="form-group">
+                                                                    <Field name="twitter" type="text" placeholder="Twitter Link" className={`form-control form-control-lg group_formcontrol mb-3 ${errors.twitter && touched.twitter ? ' is-invalid' : ''}`} />
+                                                                    <ErrorMessage name="twitter" component="div" className="invalid-feedback" />
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="col-md-6 col-xl-4">
+                                                                <div className="form-group">
+                                                                    <Field name="instagram" type="text" placeholder="Instagram Link" className={`form-control form-control-lg group_formcontrol mb-3 ${errors.instagram && touched.instagram ? ' is-invalid' : ''}`} />
+                                                                    <ErrorMessage name="instagram" component="div" className="invalid-feedback" />
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Submit Button */}
                                                             <div className="col-12 text-right">
-                                                                <button type="submit" className="btn btn-primary">Submit</button>
+                                                                <button type="submit" className="btn btn-primary" disabled={isSubmitting}>Update</button>
                                                             </div>
                                                         </div>
                                                     </Form>
                                                 )}
                                             </Formik>
+
                                         </div>
                                         <hr />
-                                        <div className="social-settings">
-                                            <h4>Social Links</h4>
-                                            <div className="form-col form-body">
-                                                <Formik initialValues={initialValues} onSubmit={onSubmit}>
-                                                    <Form>
-                                                        <div className="row">
-                                                            <div className="col-md-6 col-xl-4">
-                                                                <div className="form-group">
-                                                                    <Field className="form-control form-control-lg group_formcontrol mb-3" name="facebook" type="text" placeholder="Facebook Link" />
-                                                                </div>
-                                                            </div>
-                                                            <div className="col-md-6 col-xl-4">
-                                                                <div className="form-group">
-                                                                    <Field className="form-control form-control-lg group_formcontrol mb-3" name="twitter" type="text" placeholder="Twitter Link" />
-                                                                </div>
-                                                            </div>
-                                                            <div className="col-md-6 col-xl-4">
-                                                                <div className="form-group">
-                                                                    <Field className="form-control form-control-lg group_formcontrol mb-3" name="instagram" type="text" placeholder="Instagram Link" />
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div className="form-row profile_form m-0 align-items-center">
-                                                            <div className="me-4">
-                                                                <button type="submit" className="btn-update py-2">
-                                                                    Update Details
-                                                                </button>
-                                                            </div>
-                                                            <div className="cancel-btn">
-                                                                <Link to="#" data-bs-dismiss="modal" aria-label="Close">Cancel</Link>
-                                                            </div>
-                                                        </div>
-                                                    </Form>
-                                                </Formik>
-                                            </div>
-                                        </div>
                                     </div>
                                     <div className="settings-delete mt-4">
                                         <div className="row align-items-center justify-content-between">
@@ -316,27 +382,17 @@ const UpdateUserInfo = () => {
                                                 <h5>Change your password</h5>
                                                 <p>We will email you a confirmation when changing your password, so please expect that email after submitting.</p>
                                             </div>
-                                            <div className="col-md-4 text-md-end">
+                                            {/* <div className="col-md-4 text-md-end">
                                                 <button className=" logout-btn">Forgot password</button>
-                                            </div>
+                                            </div> */}
                                         </div>
                                     </div>
                                     <div className="security-settings">
                                         <div className="password-updation">
                                             <Formik
                                                 initialValues={initialPasswordValues}
-                                                onSubmit={async (values, { setSubmitting }) => {
-                                                    // Implement the password change logic here.
-                                                    await changePassword({
-                                                        currentPassword: values.currentPassword,
-                                                        newPassword: values.newPassword,
-                                                        confirmPassword: values.confirmPassword,
-                                                    });
-                                                    if (isPasswordChangeSuccess) {
-                                                        alert('Password changed successfully');
-                                                    }
-                                                    setSubmitting(false);
-                                                }}
+                                                validationSchema={passwordValidationSchema}
+                                                onSubmit={onSubmitPasswordChange}
                                             >
                                                 {({ isSubmitting }) => (
                                                     <Form>
@@ -344,48 +400,30 @@ const UpdateUserInfo = () => {
                                                             <div className="password-updation">
                                                                 <div className="row">
                                                                     <div className="col-xl-4">
-                                                                        <div className="form-col form-body">
-                                                                            <div className="form-group">
-                                                                                <label>Current password</label>
-                                                                                <Field name="currentPassword" type="password" className="form-control form-control-lg group_formcontrol" />
-                                                                            </div>
-                                                                            <div className="form-group">
-                                                                                <label>New password</label>
-                                                                                <Field name="newPassword" type="password" className="form-control form-control-lg group_formcontrol" />
-                                                                            </div>
-                                                                            <div className="form-group">
-                                                                                <label>Confirm password</label>
-                                                                                <Field name="confirmPassword" type="password" className="form-control form-control-lg group_formcontrol" />
-                                                                            </div>
-                                                                            <div className="form-row profile_form m-0 align-items-center">
-                                                                                <div className="me-4">
-                                                                                    <button type="submit" className="btn-update mb-0 py-2" disabled={isSubmitting}>
-                                                                                        Update Password
-                                                                                    </button>
-                                                                                </div>
-                                                                                <div className="cancel-btn">
-                                                                                    <a href="#" data-bs-dismiss="modal" aria-label="Close">Cancel</a>
-                                                                                </div>
-                                                                            </div>
+                                                                        <div className="form-group">
+                                                                            <label>Current password</label>
+                                                                            <Field name="currentPassword" type="password" className="form-control" />
+                                                                            <ErrorMessage name="currentPassword" component="div" className="text-danger" />
                                                                         </div>
-                                                                    </div>
-                                                                    <div className="col-xl-8">
-                                                                        <div className="requirement-card">
-                                                                            <h4>Password requirements</h4>
-                                                                            <p className="py-3 mb-0">To create a new password, you have to meet all of the following requirements:</p>
-                                                                            <div className="requirements-list">
-                                                                                <p>Minimum 8 characters</p>
-                                                                                <p>At least one special character</p>
-                                                                                <p>At least one number</p>
-                                                                                <p>Can’t be the same as a previous password</p>
-                                                                            </div>
+
+                                                                        <div className="form-group">
+                                                                            <label>New password</label>
+                                                                            <Field name="newPassword" type="password" className="form-control" />
+                                                                            <ErrorMessage name="newPassword" component="div" className="text-danger" />
+                                                                        </div>
+
+                                                                        <div className="form-group">
+                                                                            <label>Confirm password</label>
+                                                                            <Field name="confirmPassword" type="password" className="form-control" />
+                                                                            <ErrorMessage name="confirmPassword" component="div" className="text-danger" />
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                            </div>
-                                                            <hr />
-                                                            <hr />
 
+                                                                <button type="submit" className="btn-update mb-0 py-2" disabled={isSubmitting}>
+                                                                    Update Password
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     </Form>
                                                 )}
@@ -393,178 +431,43 @@ const UpdateUserInfo = () => {
 
                                         </div>
                                     </div>
-                                    <div className="authentication">
-                                        <h4 className="auth-title">Two Factor Authentication</h4>
-                                        <Formik
-                                            initialValues={initialTwoFactorAuthenticationValues}
-                                            onSubmit={handleTwoFactorSubmit}
-                                        >
-                                            {({ isSubmitting }) => (
-                                                <Form>
-                                                    <div className="form-group">
-                                                        <Field type="checkbox" name="sendOtpToEmail" />
-                                                        <span className="mx-2">Send OTP to Email</span>
-                                                    </div>
-                                                    <div className="form-group">
-                                                        <Field type="checkbox" name="sendOtpToPhone" />
-                                                        <span className="mx-2">Send OTP to Phone</span>
-                                                    </div>
-                                                    {verificationType === null && (
-                                                        <div>
-                                                            <h4>Both phone and email verification methods are enabled for your account.</h4>
-                                                        </div>
-                                                    )}
-                                                    {verificationType !== null && !initialTwoFactorAuthenticationValues.verified && (
-                                                        <div>
-                                                            <h4>You have not verified your {verificationType === 0 ? "email" : "phone number"}.</h4>
-                                                            <button type="submit" className="btn-update mb-0 py-2" disabled={isSubmitting}>
-                                                                Verify
-                                                            </button>
-                                                        </div>
-                                                    )}
-                                                    {verificationType !== null && initialTwoFactorAuthenticationValues.verified && (
-                                                        <div>
-                                                            <h4>Verified</h4>
-                                                        </div>
-                                                    )}
-                                                </Form>
+                                    {twoStepVerificationFlag &&
+                                        <div className="authentication">
+                                            <h4 className="auth-title">Two Factor Authentication</h4>
+                                            <div>
+                                                <input onChange={(e) => updateAuthEmail(e)} type="checkbox" name="sendOtpToEmail" checked={checkEmail} />
+                                                <span className="mx-2">Send OTP to Email</span>
+                                            </div>
+                                            <div>
+                                                <input onChange={updateAuthPhone} type="checkbox" name="sendOtpToPhone" checked={checkPhone} />
+                                                <span className="mx-2">Send OTP to Phone</span>
+                                            </div>
+                                            {!checkEmail && checkPhone && (
+                                                <h5 className="text-danger">Email not varified</h5>)
+                                            } {!checkPhone && checkEmail && (
+                                                <h5 className="text-danger">Phone not varified</h5>)
+                                            }
+                                            {!checkPhone && !checkEmail && (
+                                                <span className="text-danger">Both Email and Phone are not varified</span>)
+                                            }
+                                            {showVerificationModal && verificationType === 1 && (
+                                                <VerificationModal
+                                                    verificationType={verificationType}
+                                                    onClose={() => setShowVerificationModal(false)}
+                                                    onSubmit={handlePhoneVerification}
+                                                />
                                             )}
-                                        </Formik>
 
-                                        {/* Modals */}
-                                        {showVerificationModal && verificationType === 1 && (
-                                            <VerificationModal
-                                                verificationType={verificationType}
-                                                onClose={() => setShowVerificationModal(false)}
-                                                onSubmit={handlePhoneVerification} // Make sure to adjust this to handle both phone and email verification results accordingly
-                                            />
-                                        )}
+                                            {showOtpModal && (
+                                                <OtpModal
+                                                    onClose={setShowOtpModal(false)}
+                                                    onSubmit={handleOtpVerification}
+                                                />
+                                            )}
 
-                                        {showOtpModal && (
-                                            <OtpModal
-                                                onClose={() => setShowOtpModal(false)}
-                                                onSubmit={handleOtpVerification}
-                                            />
-                                        )}
-
-                                    </div>
+                                        </div>
+                                    }
                                 </Tab>
-
-                                {/* <Tab eventKey="notifications" title="Notifications">
-                                    <div className="settings-header">
-                                        <h5>Notifications</h5>
-                                        <p>Update your account Notifications</p>
-                                    </div>
-                                    <div className="settings-control full-options">
-                                        <ul>
-                                            <li className="d-flex align-items-center">
-                                                <label className="switch me-3">
-                                                    <input type="checkbox" checked="" />
-                                                    <span className="slider round"></span>
-                                                </label>
-                                                <div>
-                                                    <span>Allow mobile notifications</span>
-                                                </div>
-                                            </li>
-                                            <li className="d-flex align-items-center">
-                                                <label className="switch me-3">
-                                                    <input type="checkbox" checked="" />
-                                                    <span className="slider round"></span>
-                                                </label>
-                                                <div>
-                                                    <span>Notifications from your friends</span>
-                                                </div>
-                                            </li>
-                                            <li className="d-flex align-items-center">
-                                                <label className="switch me-3">
-                                                    <input type="checkbox" />
-                                                    <span className="slider round"></span>
-                                                </label>
-                                                <div>
-                                                    <span>Send notifications by email</span>
-                                                </div>
-                                            </li>
-                                            <li className="d-flex align-items-center">
-                                                <label className="switch me-3">
-                                                    <input type="checkbox" checked="" />
-                                                    <span className="slider round"></span>
-                                                </label>
-                                                <div>
-                                                    <span>Allow connected contacts</span>
-                                                </div>
-                                            </li>
-                                            <li className="d-flex align-items-center">
-                                                <label className="switch me-3">
-                                                    <input type="checkbox" checked="" />
-                                                    <span className="slider round"></span>
-                                                </label>
-                                                <div>
-                                                    <span>Confirm message requests</span>
-                                                </div>
-                                            </li>
-                                            <li className="d-flex align-items-center">
-                                                <label className="switch me-3">
-                                                    <input type="checkbox" />
-                                                    <span className="slider round"></span>
-                                                </label>
-                                                <div>
-                                                    <span>Profile privacy</span>
-                                                </div>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </Tab>
-                                <Tab eventKey="history" title="History">
-                                    <div className="settings-header">
-                                        <div className="row align-items-center">
-                                            <div className="col-md-8">
-                                                <h5>Device History</h5>
-                                                <p>If you see a device here that you believe wasn’t you, please contact our account fraud department immediately.</p>
-                                            </div>
-                                            <div className="col-md-4 text-md-end">
-                                                <button className=" logout-btn">Log out all Devices</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="logged-devices-settings">
-                                        <div className="logged-device align-items-center d-flex">
-                                            <div className="device-details">
-                                                <h5>IPhone 11</h5>
-                                                <p>Brownsville, VT · Jun 11 at 10:05am</p>
-                                            </div>
-                                            <div className="logged-btn ms-auto">
-                                                <a href="#">Sign Out</a>
-                                            </div>
-                                        </div>
-                                        <div className="logged-device align-items-center d-flex">
-                                            <div className="device-details">
-                                                <h5>IMac OSX · Safari 10.2</h5>
-                                                <p>Brownsville, VT · Jun 11 at 10:05am</p>
-                                            </div>
-                                            <div className="logged-btn ms-auto">
-                                                <a href="#">Sign Out</a>
-                                            </div>
-                                        </div>
-                                        <div className="logged-device align-items-center d-flex">
-                                            <div className="device-details">
-                                                <h5>HP Laptop Win10</h5>
-                                                <p>Brownsville, VT · Jun 11 at 10:05am</p>
-                                            </div>
-                                            <div className="logged-btn ms-auto">
-                                                <a href="#">Sign Out</a>
-                                            </div>
-                                        </div>
-                                        <div className="logged-device align-items-center d-flex">
-                                            <div className="device-details">
-                                                <h5>IMac OSX · Edge browser</h5>
-                                                <p>Brownsville, VT · Jun 11 at 10:05am</p>
-                                            </div>
-                                            <div className="logged-btn ms-auto">
-                                                <a href="#">Sign Out</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </Tab> */}
                             </Tabs>
                         </div>
                     </div >

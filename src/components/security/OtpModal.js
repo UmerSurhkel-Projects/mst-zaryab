@@ -14,33 +14,31 @@ const OtpModal = ({ onSubmit, onClose }) => {
     };
 
     return (
-        <div className="modal-backdrop">
-            <div className="modal-overlay security-modal">
-                <div className="modal-content">
-                    <h2>OTP Verification</h2>
-                    <Formik
-                        initialValues={{ otp: '', value: '' }}
-                        validationSchema={otpSchema}
-                        onSubmit={handleSubmit}
-                    >
-                        {({ isSubmitting }) => (
-                            <Form>
-                                <Field
-                                    name="otp"
-                                    type="text"
-                                    placeholder="Enter OTP"
-                                    maxLength="6"
-                                    className="phone-input"
-                                />
-                                <ErrorMessage name="otp" component="div" className="error-message" />
-                                <div className="modal-actions">
-                                    <button type="submit" className="modal-submit-btn" disabled={isSubmitting}>Verify</button>
-                                    <button type="button" onClick={onClose} className="modal-close-btn">Cancel</button>
-                                </div>
-                            </Form>
-                        )}
-                    </Formik>
-                </div>
+        <div className="modal-overlay security-modal ">
+            <div className="modal-content">
+                <h2>OTP Verification</h2>
+                <Formik
+                    initialValues={{ otp: '', value: '' }}
+                    validationSchema={otpSchema}
+                    onSubmit={handleSubmit}
+                >
+                    {({ isSubmitting }) => (
+                        <Form>
+                            <Field
+                                name="otp"
+                                type="text"
+                                placeholder="Enter OTP"
+                                maxLength="6"
+                                className="phone-input"
+                            />
+                            <ErrorMessage name="otp" component="div" className="error-message" />
+                            <div className="modal-actions">
+                                <button type="submit" className="modal-submit-btn" disabled={isSubmitting}>Verify</button>
+                                <button type="button" onClick={onClose} className="modal-close-btn">Cancel</button>
+                            </div>
+                        </Form>
+                    )}
+                </Formik>
             </div>
         </div>
     );
