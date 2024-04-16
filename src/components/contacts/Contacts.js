@@ -19,6 +19,7 @@ const Contact = (props) => {
 
     return (
         <div className="sidebar-body" id="chatsidebar">
+       {     console.log(props)}
             <ul className="user-list">
                 <li className="user-list-item">
                     <div>
@@ -38,7 +39,7 @@ const Contact = (props) => {
                         </div>
                         <div className="last-chat-time">
                             <small className="text-muted">{props.time}</small>
-                            <div className="new-message-count">{props.notification}</div>
+                            <div className={props.class}>{props.notifications}</div>
                         </div>
                     </div>
                 </li>

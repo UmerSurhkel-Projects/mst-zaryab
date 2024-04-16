@@ -11,7 +11,7 @@ const Search = ({ handleSearch, onMyClick }) => {
         setSubmitting(false);
     }}
 >
-    {({ values }) => ( // Destructure values from Formik props
+    {({ values }) => ( 
         <Form className="search_chat has-search">
             <div className="input-group mb-3" >
                 <Field type="text" className="form-control chat_input" placeholder="Search Contacts" name="search" aria-label="Username" aria-describedby="basic-addon1" id="search-contacts" />

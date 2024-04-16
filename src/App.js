@@ -4,14 +4,14 @@ import Register from './pages/auth/register/Register';
 import Login from './pages/auth/login/Login';
 import VerifyEmail from './pages/auth/verify-email/EmailVerification';
 import Settings from './pages/settings/Settings';
-import Main from './components/chats/RecentChats'
+import RecentChats from './components/chats/RecentChats'
 import Contacts from './pages/contacts/Contacts';
 import Chat from './components/chats/Chat';
 import RightSidebar from './components/sidebar/RightSidebar';
 import { useSelector } from 'react-redux';
 import Loader from './components/loader/Loader';
 import './App.css'
-
+import Dashboard from './components/dashboard';
 const App = () => {
   const isLoading = useSelector((state) => state.loader.isLoading);
 
@@ -26,7 +26,7 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route element={<PrivateRoute />}>
-            <Route index element={<Main />} />
+            <Route index element={<Dashboard />} />
             <Route path="settings" element={<Settings />} />
             <Route path="contacts" element={<Contacts />} />
             <Route path="contacts/:contactId" element={<Chat />} />

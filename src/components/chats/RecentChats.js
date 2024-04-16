@@ -1,127 +1,90 @@
-// import { useState } from 'react';
-// import { Link } from 'react-router-dom';
-// import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-// import { faPlus } from '@fortawesome/free-solid-svg-icons';
-// import User from '../users/User';
-// import TopUser from '../users/TopUser';
-// import Search from '../search/Search';
-// import ChatPlaceHolder from '../chats/ChatPlaceholder';
-// import { useParams, useNavigate } from 'react-router-dom';
-// import images from '../../assets/assets';
-// import { useRecentChatsQuery } from '../../api/ChatApi';
-// import { useGetContactByIdQuery } from '../../api/ContactApi';
-// import Chat from '../chats/Chat';
-// const Main = () => {
-//     const navigate = useNavigate();
-//     const { contactId } = useParams();
-
-//     const [searchQuery, setSearchQuery] = useState('');
-//     // const { data: { user: contact } = {}, error, isLoading } = useGetContactByIdQuery(contactId);
-
-//       // Pagination parameters
-//       const limit = 10;
-//       const page = 1;
-//       const { data: { recentChats = [] } = {}, isError, isContactList, refetch } = useRecentChatsQuery({limit, page,search: searchQuery});
-
-    
-//     const handleSearch = (query) => {
-//         setSearchQuery(query);
-//     };
-
-//     const handleSearchClick = (query) => {
-//         setSearchQuery(query);
-//     };
-
-//     const filteredContactList = recentChats.filter(contact =>
-//         contact.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-//         (contact.contactId?.email && contact.contactId.email.toLowerCase().includes(searchQuery.toLowerCase()))
-//     );
-//     const handleContactClick = (contactId) => {
-//         return
-//         <><Chat/></>
-//     };
-//     return (
-//         <>
-//             <div className="sidebar-group left-sidebar chat_sidebar">
-//                 <div id="chats" className="left-sidebar-wrap sidebar active slimscroll">
-//                     <div className="slimscroll">
-//                         {/* <div className="left-chat-title d-flex justify-content-between align-items-center">
-//                             <div className="chat-title">
-//                                 <h4>CHATS</h4>
-//                             </div>
-//                             <div className="add-section">
-//                                 <ul>
-//                                     <li><Link to="group.html"><span className="material-icons">group</span></Link></li>
-//                                     <li><Link to="#" data-bs-toggle="modal" data-bs-target="#add-user"><FontAwesomeIcon icon={faPlus} /></Link></li>
-//                                 </ul>
-//                             </div>
-//                         </div> */}
-//                         <div className='mt-3'>
-//                     <Search handleSearch={handleSearch} onMyClick={handleSearchClick} />
-//                         </div>
-//                             {filteredContactList.length > 0 ? (
-//                                 filteredContactList.map(contact => (
-//                                     <div onClick={() => handleContactClick(contact?.contactId?._id)} key={contact._id}>
-//                                         <User
-//                                             name={contact?.userName}
-//                                             title={contact?.contactId?.email}
-//                                             image={images?.placeHolder}
-//                                             notifications={contact?.pendingMsgCount}
-//                                             searchQuery={searchQuery}
-//                                         />
-//                                     </div>
-//                                 ))
-//                             ) : (
-//                                 <div className='text-center'>No contacts found</div>
-//                             )}
-//                         {/* <h4 className='text-center empty-placeholder-chat-text'>No recent chats </h4> */}
-//                     </div>
-//                 </div>
-//             </div>
-//             <ChatPlaceHolder />
-//         </>
-//     )
-// }
-
-// export default Main
-
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import React, { useState, useEffect } from 'react';
 import Contact from '../contacts/Contacts';
-import TopContact from '../contacts/TopContact';
 import Search from '../search/Search';
 import ChatPlaceHolder from '../chats/ChatPlaceholder';
-import { useParams, useNavigate } from 'react-router-dom';
 import images from '../../assets/assets';
 import { useRecentChatsQuery } from '../../api/ChatApi';
-import { useGetContactByIdQuery } from '../../api/ContactApi';
 import Chat from '../chats/Chat';
+import Title from '../title/Title';
+import socket from '../../socket';
 
-const Main = () => {
-    const navigate = useNavigate();
-    const { contactId } = useParams();
-
-    const [searchQuery, setSearchQuery] = useState('');
+const RecentChats = () => {
     const [selectedChatId, setSelectedChatId] = useState(null);
-
-    const limit = 10;
-    const page = 1;
-    const { data: { recentChats = [] } = {}, isError, isContactList, refetch } = useRecentChatsQuery({limit, page, search: searchQuery});
+    const [searchQuery, setSearchQuery] = useState('');
+    // const [latestChatsData, setLatestChatsData] = useState([])
+    const [messageData, setMessageData] = useState([])
+    // const [recentChatsData, setRecentChatsData] = useState([])
+    const { data: { recentChats = [] } = {}, refetch } = useRecentChatsQuery({ limit: 10, page: 1, search: searchQuery });
 
     const handleSearch = (query) => {
         setSearchQuery(query);
     };
 
-    const filteredContactList = recentChats.filter(contact =>
-        contact.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (contact.contactId?.email && contact.contactId.email.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
-
-    const handleContactClick = (contactId) => {
-        setSelectedChatId(contactId);
+    const getLatestChatsData = (data) => {
+        console.log('here my latest data is: ', data);
+        // setLatestChatsData(data);
+        // setRecentChatsData(data);
+        refetch();
     };
+            
+    // useEffect(() => {
+    //     console.log('HERE:????????????', selectedChatId, recentChats)
+    //     setLatestChatsData(recentChats)
+    // }, [recentChats])
+
+    // useEffect(() => {
+    //     console.log("latest chats", latestChatsData)
+
+    // }, [latestChatsData])
+
+    // const messageSeenListener = (data) => {
+    //     console.log(data, "dataaaa");
+    //     const { getAllMessages, recentChats } = data;
+    //     console.log("messages seen message........");
+    //     localStorage.setItem("messages", JSON.stringify(getAllMessages));
+    //     setMessageData(getAllMessages);
+    //     setLatestChatsData(recentChats)
+    //     refetch()
+
+    // };
+
+    // useEffect(() => {
+    //     socket.on('messages seen', messageSeenListener);
+    //     return () => {
+    //         socket.off('messages seen', messageSeenListener);
+    //     };
+    // }, [])
+    
+    const handleContactClick = (contactId) => {
+
+        console.log('handleContactClick: I\'m here in function.', contactId)
+        setSelectedChatId(contactId);
+        const data = { contactId, userId: localStorage.getItem('userId') };
+        socket.emit('seen messages', data);
+        // refetch();
+    };
+
+
+
+    const resetChat = () => {
+        setSelectedChatId(null);
+    };
+
+    // Subscribe to socket event for message seen
+    // useEffect(() => {
+    //     const messageSeenListener = (data) => {
+    //         console.log('messageSeenListener data::: ', data)
+    //         // refetch();
+    //     };
+
+    //     socket.on('messages seen', messageSeenListener);
+    //     return () => {
+    //         socket.off('messages seen', messageSeenListener);
+    //     };
+    // }, [socket]);
+
+
+    
 
     return (
         <>
@@ -130,28 +93,153 @@ const Main = () => {
                     <div className="slimscroll">
                         <div className='mt-3'>
                             <Search handleSearch={handleSearch} onMyClick={handleSearch} />
+                            <Title heading="Recent Chats" />
                         </div>
-                        {filteredContactList.length > 0 ? (
-                            filteredContactList.map(contact => (
-                                <div onClick={() => handleContactClick(contact?.contactId?._id)} key={contact._id}>
-                                    <Contact
-                                        name={contact?.userName}
-                                        title={contact?.contactId?.email}
-                                        image={images?.placeHolder}
-                                        notifications={contact?.pendingMsgCount}
-                                        searchQuery={searchQuery}
-                                    />
-                                </div>
-                            ))
-                        ) : (
-                            <div className='text-center'>No contacts found</div>
-                        )}
+                        {recentChats.map(contact => (
+                            <div onClick={() => handleContactClick(contact?.contactId?._id)} key={contact._id}>
+                                <Contact
+                                    name={contact?.userName}
+                                    title={contact?.contactId?.email}
+                                    image={images?.placeHolder}
+                                    notifications={contact?.pendingMsgCount}
+                                    class="new-message-count"
+                                    searchQuery={searchQuery}
+                                />
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
-            {selectedChatId ? <Chat contactId={selectedChatId} /> : <ChatPlaceHolder />}
+            {
+                console.log('selectedChatId: ', selectedChatId)
+            }
+            {selectedChatId &&
+                <Chat contactId={selectedChatId} setRecentChatsData={recentChats} setLatestChatsData={getLatestChatsData} onClose={resetChat} />
+            }
+            {!selectedChatId &&
+                <ChatPlaceHolder setRecentChatsData={recentChats} setLatestChatsData={getLatestChatsData} />}
         </>
-    )
+    );
 }
 
-export default Main;
+export default RecentChats;
+
+
+
+// import React, { useState, useEffect } from 'react';
+// import Contact from '../contacts/Contacts';
+// import Search from '../search/Search';
+// import ChatPlaceHolder from '../chats/ChatPlaceholder';
+// import images from '../../assets/assets';
+// import { useRecentChatsQuery } from '../../api/ChatApi';
+// import Chat from '../chats/Chat';
+// import Title from '../title/Title';
+// import socket from '../../socket';
+
+// const RecentChats = () => {
+//     const [selectedChatId, setSelectedChatId] = useState(null);
+//     const [searchQuery, setSearchQuery] = useState('');
+//     const [latestChatsData, setLatestChatsData] = useState([])
+//     const [messageData, setMessageData] = useState([])
+//     const [recentChatsData, setRecentChatsData] = useState([])
+//     const { data: { recentChats = [] } = {}, refetch } = useRecentChatsQuery({ limit: 10, page: 1, search: searchQuery });
+
+//     const handleSearch = (query) => {
+//         setSearchQuery(query);
+//     };
+
+//     useEffect(() => {
+//         console.log('HERE:????????????', selectedChatId, recentChats)
+//         setLatestChatsData(recentChats)
+//     }, [recentChats])
+
+//     useEffect(() => {
+//         console.log("latest chats", latestChatsData)
+
+//     }, [latestChatsData])
+
+//     // const messageSeenListener = (data) => {
+//     //     console.log(data, "dataaaa");
+//     //     const { getAllMessages, recentChats } = data;
+//     //     console.log("messages seen message........");
+//     //     localStorage.setItem("messages", JSON.stringify(getAllMessages));
+//     //     setMessageData(getAllMessages);
+//     //     setLatestChatsData(recentChats)
+//     //     refetch()
+
+//     // };
+
+//     // useEffect(() => {
+//     //     socket.on('messages seen', messageSeenListener);
+//     //     return () => {
+//     //         socket.off('messages seen', messageSeenListener);
+//     //     };
+//     // }, [])
+    
+//     const handleContactClick = (contactId) => {
+
+//         console.log('handleContactClick: I\'m here in function.', contactId)
+//         setSelectedChatId(contactId);
+//         const data = { contactId, userId: localStorage.getItem('userId') };
+//         socket.emit('seen messages', data);
+//         // refetch();
+//     };
+
+
+
+//     const resetChat = () => {
+//         setSelectedChatId(null);
+//     };
+
+//     // Subscribe to socket event for message seen
+//     useEffect(() => {
+//         const messageSeenListener = (data) => {
+//             refetch();
+//         };
+
+//         socket.on('messages seen', messageSeenListener);
+//         return () => {
+//             socket.off('messages seen', messageSeenListener);
+//         };
+//     }, [socket]);
+
+//     const getLatestChatsData = (data) => {
+//         setLatestChatsData(data);
+//     };
+
+//     return (
+//         <>
+//             <div className="sidebar-group left-sidebar chat_sidebar">
+//                 <div id="chats" className="left-sidebar-wrap sidebar active slimscroll">
+//                     <div className="slimscroll">
+//                         <div className='mt-3'>
+//                             <Search handleSearch={handleSearch} onMyClick={handleSearch} />
+//                             <Title heading="Recent Chats" />
+//                         </div>
+//                         {latestChatsData.map(contact => (
+//                             <div onClick={() => handleContactClick(contact?.contactId?._id)} key={contact._id}>
+//                                 <Contact
+//                                     name={contact?.userName}
+//                                     title={contact?.contactId?.email}
+//                                     image={images?.placeHolder}
+//                                     notifications={contact?.pendingMsgCount}
+//                                     class="new-message-count"
+//                                     searchQuery={searchQuery}
+//                                 />
+//                             </div>
+//                         ))}
+//                     </div>
+//                 </div>
+//             </div>
+//             {
+//                 console.log('selectedChatId: ', selectedChatId)
+//             }
+//             {selectedChatId &&
+//                 <Chat contactId={selectedChatId} setRecentChatsData={refetch} onClose={resetChat} setLatestChatsData={getLatestChatsData} />}
+//             {!selectedChatId &&
+//                 <ChatPlaceHolder setRecentChatsData={refetch} setLatestChatsData={setLatestChatsData} />}
+//         </>
+//     );
+// }
+
+// export default RecentChats;

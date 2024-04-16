@@ -109,6 +109,8 @@ const RightSidebar = (props) => {
             handleUsernameCancel(); // Revert changes if not confirmed
         }
     };
+  
+ 
 
     return (
         <div className={`right-sidebar ${isSidebarVisible ? '' : 'hide-right-sidebar'}`} id="middle1">
@@ -189,7 +191,7 @@ const RightSidebar = (props) => {
                                                     </ul>
                                                 </div>
                                                 <div className="social-media-col">
-                                                 {props.userFacebook || props.userTwitter || props.userInstagram ?  <h6>Social media accounts</h6> :""}
+                                                    {props.userFacebook || props.userTwitter || props.userInstagram ? <h6>Social media accounts</h6> : ""}
                                                     <ul>
                                                         {props.userFacebook && (
                                                             <li>
@@ -261,8 +263,15 @@ const RightSidebar = (props) => {
                             <ul>
                                 {/* <li><a href="#"><span><i className="fas fa-sign-out-alt"></i></span> Exit Group</a></li>
 								<li><a href="#"><span className="material-icons">report_problem</span> Report Chat</a></li> */}
-                                <li className='text-danger delete-account'><span href="#"><span><FontAwesomeIcon icon={faTrashAlt} /></span> Delete Chat</span></li>
-                            </ul>
+                                <li className='text-danger delete-account' onClick={props.deleteChat}>
+                                    <span href="#">
+                                        <span>
+                                            <FontAwesomeIcon  icon={faTrashAlt} />
+                                        </span>
+                                        Delete Chat
+                                    </span>
+                                </li>                           
+                                 </ul>
                         </div>
                     </div>
                 </Scrollbars>

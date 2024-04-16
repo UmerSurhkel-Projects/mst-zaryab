@@ -2,14 +2,12 @@ import ProfileCard from '../../components/profile/ProfileCard'
 import SettingsCard from '../../components/profile/SettingsCard'
 import UpdateUserInfo from '../../components/profile/UpdateUserInfo'
 import BreadCrumb from '../../components/breadcrumb/BreadCrumb'
-import Search from '../../components/search/Search'
 import { Scrollbars } from 'react-custom-scrollbars';
 import { useNavigate } from 'react-router-dom';
 import React, { useState } from 'react';
 const Settings = () => {
     const navigate = useNavigate();
     const [twoStepVerificationFlag,setTwoStepVerificationFlag]=useState(false);
-
 
     const logoutHandler = () => {
         localStorage.removeItem('accessToken');

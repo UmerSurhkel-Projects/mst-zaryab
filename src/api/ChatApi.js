@@ -18,13 +18,22 @@ export const chatApi = createApi({
     reducerPath: 'chatApi',
     baseQuery: baseQueryWithAuth,
     endpoints: (builder) => ({
-       getMessages: builder.query({
+        getMessages: builder.query({
             query: ({ contactId, limit, page }) => `messages/get/${contactId}?limit=${limit}&page=${page}`,
         }),
         recentChats: builder.query({
-            query: ({limit, page }) => `contacts/recent-chats?limit=${limit}&page=${page}`,
+            query: ({ limit, page }) => `contacts/recent-chats?limit=${limit}&page=${page}`,
+            providesTags: ['RecentChats'], // Adding providesTags here
         }),
+        deleteChat: builder.mutation({
+            query: ({ contactId }) => ({
+                url: `messages/delete-chat/${contactId}`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: [{ type: 'RecentChats' }],
+        }),
+
     }),
 });
 
-export const { useGetMessagesQuery ,useRecentChatsQuery} = chatApi;
+export const { useGetMessagesQuery, useRecentChatsQuery, useDeleteChatMutation } = chatApi;
