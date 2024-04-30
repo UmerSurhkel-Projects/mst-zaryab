@@ -9,9 +9,11 @@ function getAllPages() {
 
   function traverse(directory) {
     const files = fs.readdirSync(directory);
+    console.log("this is files ", files);
 
     files.forEach((file) => {
       const filePath = path.join(directory, file);
+      console.log(filePath,"file path")
       const stats = fs.statSync(filePath);
 
       if (stats.isDirectory()) {
