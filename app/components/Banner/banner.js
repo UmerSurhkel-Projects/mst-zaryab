@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import { Images } from '../../assets/assets'
+import {Images} from '../../../public/assets/assets'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar } from "@fortawesome/free-solid-svg-icons";
 

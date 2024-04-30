@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import './globals.css';
+import '../public/assets/css/globals.css';
 
 export const metadata = {
   title: 'Assettrack',

@@ -1,6 +1,6 @@
 'use client'
 import Image from 'next/image'
-import { Images } from '../../assets/assets'
+import {Images} from '../../../public/assets/assets'
 import Link from 'next/link'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar, faArrowRight } from "@fortawesome/free-solid-svg-icons";

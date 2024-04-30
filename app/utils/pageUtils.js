@@ -1,4 +1,3 @@
-// utils/pageUtils.js
 
 const fs = require('fs');
 const path = require('path');
@@ -16,11 +15,20 @@ function getAllPages() {
       const stats = fs.statSync(filePath);
 
       if (stats.isDirectory()) {
-        traverse(filePath);
+        // Ignore directories named "components"
+        if (file !== 'components') {
+          traverse(filePath);
+        }
       } else if (file.endsWith('.tsx') || file.endsWith('.js')) {
-        const relativePath = path.relative(appDir, filePath);
-        const url = `/${relativePath.replace(/\.tsx?$/, '').replace(/\\/g, '/')}`;
-        pages.push({ url });
+        // Ignore specific files
+        if (
+          file !== 'pageUtils.js' &&
+          file !== 'layout.tsx'
+        ) {
+          const relativePath = path.relative(appDir, filePath);
+          const url = `/${relativePath.replace(/\.tsx?$/, '').replace(/\\/g, '/')}`;
+          pages.push({ url });
+        }
       }
     });
   }

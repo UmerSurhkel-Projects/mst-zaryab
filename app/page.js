@@ -1,4 +1,4 @@
-import Home from "./pages/components/Home/home"
+import Home from "./components/Home/home"
 
 import "../tailwind.config"
 function App() {

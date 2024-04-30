@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import Image from 'next/image'
 import Link from 'next/link'
-import { Images } from '../../assets/assets'
+import {Images} from '../../../public/assets/assets'
 
 
 function Header() {
@@ -62,9 +62,6 @@ function Header() {
                     } w-100 lg:mt-0 md:top-6 transition-transform duration-300 ease-in-out transform lg:transform-none`}>
                     <div className="static 2xl:static xl:static lg:static md:static sm:absolute top-0 2xl:top-0 xl:top-0 lg:top-0 md:top-0 sm:top-8 w-full flex 2xl:flex xl:flex lg:flex md:block sm:block items-center bg-transparent 2xl:bg-transparent xl:bg-transparent lg:bg-transparent md:bg-HeaderBackgroud sm:bg-HeaderBackgroud p-0 2xl:p-0 xl:p-0 lg:p-0 md:p-7 sm:p-5" id="navbar-default">
                         <ul className="flex 2xl:flex xl:flex lg:flex md:block sm:block  p-0 mb-0 ">
-                            <li className='mr-marginHeaderList 2xl:mr-marginHeaderList xl:mr-xlmarginHeaderList lg:mr-lgmarginHeaderList md:mr-0 sm:mr-0 p-0 2xl:p-0 xl:p-0 lg:p-0 md:p-3 sm:p-2 bg-transparent 2xl:bg-transparent xl:bg-transparent lg:bg-transparent md:bg-HeaderNav sm:bg-HeaderNav rounded mb-0 2xl:mb-0 xl:mb-0 lg:mb-0 md:mb-3 sm:mb-2 '>
-                                <Link href="/" className="text-white font-semibold text-lg 2xl:text-lg xl:text-base lg:text-sm md:text-xs sm:text-xs ease-in-out duration-500 hover:text-bannerStrongColor">Home</Link>
-                            </li>
                             <li className='mr-marginHeaderList 2xl:mr-marginHeaderList xl:mr-xlmarginHeaderList lg:mr-lgmarginHeaderList md:mr-0 sm:mr-0 p-0 2xl:p-0 xl:p-0 lg:p-0 md:p-3 sm:p-2 bg-transparent 2xl:bg-transparent xl:bg-transparent lg:bg-transparent md:bg-HeaderNav sm:bg-HeaderNav rounded mb-0 2xl:mb-0 xl:mb-0 lg:mb-0 md:mb-3 sm:mb-2'>
                                 <Link href="/" className="text-white font-semibold text-lg 2xl:text-lg xl:text-base lg:text-sm md:text-xs sm:text-xs ease-in-out duration-500 hover:text-bannerStrongColor">Review</Link>
                             </li>

@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import { Images } from '../../assets/assets'
+import {Images} from '../../../public/assets/assets'
 
 
 function Assets() {
