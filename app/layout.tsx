@@ -62,7 +62,13 @@ import '../public/assets/css/globals.css';
 
 const inter = Inter({ subsets: ["latin"] });
 
-export default function RootLayout({ children, title, description }: RootLayoutProps) {
+interface RootLayoutProps {
+  children: ReactNode;
+  title: string;
+  description: string;
+}
+
+const RootLayout: React.FC<RootLayoutProps> = ({ children, title, description }) => {
   const metadata = {
     title: title,
     description: description,
@@ -102,9 +108,4 @@ export default function RootLayout({ children, title, description }: RootLayoutP
   );
 }
 
-// Define the interface for props
-interface RootLayoutProps {
-  children: ReactNode;
-  title: string;
-  description: string;
-}
+export default RootLayout;
