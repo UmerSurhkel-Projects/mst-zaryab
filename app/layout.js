@@ -7,9 +7,7 @@ import '../public/assets/css/globals.css';
 
 const inter = Inter({ subsets: ["latin"] });
 
-const RootLayout = ({
-  children, title, description
-}) => {
+const RootLayout = ({children, title, description}) => {
   const metadata = {
     title: title,
     description: description,
