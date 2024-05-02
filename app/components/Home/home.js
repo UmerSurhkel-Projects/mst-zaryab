@@ -1,4 +1,3 @@
-import React from 'react'
 import Header from '../Header/header'
 import Banner from "../Banner/banner"
 import Trusted from "../Trusted/Trusted"
@@ -11,10 +10,7 @@ import Plans from '../Plans/Plans'
 import Frequently from '../Frequently/Frequently'
 import Footer from '../Footer/Footer'
 
-
-
-
-function Home() {
+const  Home =() => {
     return (
         <div className='wrapper'>
             <Header />
