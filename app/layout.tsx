@@ -51,6 +51,7 @@
 
 // app/layout.js
 
+
 'use client'
 import { ReactNode } from 'react';
 import { Inter } from "next/font/google";
@@ -61,13 +62,7 @@ import '../public/assets/css/globals.css';
 
 const inter = Inter({ subsets: ["latin"] });
 
-interface RootLayoutProps {
-  children: ReactNode;
-  title: string;
-  description: string;
-}
-
-const RootLayout = ({children, title, description}: RootLayoutProps) => {
+export default function RootLayout({ children, title, description }: RootLayoutProps) {
   const metadata = {
     title: title,
     description: description,
@@ -107,4 +102,9 @@ const RootLayout = ({children, title, description}: RootLayoutProps) => {
   );
 }
 
-export default RootLayout;
+// Define the interface for props
+interface RootLayoutProps {
+  children: ReactNode;
+  title: string;
+  description: string;
+}
