@@ -1,14 +1,15 @@
-import '../public/assets/css/globals.css';
 import type { Metadata } from "next";
+import '../public/assets/css/globals.css';
+
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://mst-zaryab.vercel.app/"),
   title: {
-    default: "AssetTrack",
+    default: "AssetTrack: Streamline Asset Management for Business Efficiency",
     template: `$%s - AssetTrack`,
   },
   description:
-    "AssetTrack is a comprehensive asset management solution for businesses.",
+  "Discover AssetTrack: A powerful asset management solution tailored for businesses. Streamline inventory management, optimize asset tracking, and boost efficiency with AssetTrack comprehensive suite of tools. Experience seamless control over your business assets today.",
   keywords: [
     "AssetTrack",
     "asset management",
@@ -27,9 +28,9 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "https://mst-zaryab.vercel.app/",
-    title: "AssetTrack",
+    title:  "AssetTrack: Streamline Asset Management for Business Efficiency",
     description:
-      "AssetTrack is a comprehensive asset management solution for businesses.",
+    "Discover AssetTrack: A powerful asset management solution tailored for businesses. Streamline inventory management, optimize asset tracking, and boost efficiency with AssetTrack comprehensive suite of tools. Experience seamless control over your business assets today.",
     siteName: "AssetTrack",
     images: [
       {
@@ -42,7 +43,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "AssetTrack",
+    title:  "AssetTrack: Streamline Asset Management for Business Efficiency",
     description:
       "AssetTrack is a comprehensive asset management solution for businesses.",
     creator: "@yourtwitterhandle",
@@ -72,8 +73,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-     <head>
-     <link rel="canonical" href={metadata?.metadataBase?.href} />
+      <head>
+        <link rel="canonical" href={metadata?.metadataBase?.href} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
@@ -85,3 +86,4 @@ export default function RootLayout({
     </html>
   );
 }
+
