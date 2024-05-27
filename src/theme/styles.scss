@@ -1,0 +1,86 @@
+@import './settings';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: color(grayDark);
+  font-size: typography(sm);
+  line-height: 1.5;
+}
+
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+menu,
+nav,
+section,
+picture {
+  display: block;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin-top: 0;
+}
+
+p {
+  margin-top: 0;
+  margin-bottom: spacing(sm);
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+}
+
+ul {
+  list-style: none;
+}
+
+a {
+  border-bottom: 1px solid currentColor;
+  color: color(primary);
+  text-decoration: none;
+  transition:
+    border-color 0.2s,
+    color 0.2s;
+
+  @media (hover: hover) {
+    &:hover {
+      color: color(primaryDark);
+    }
+  }
+
+  &:focus-visible {
+    outline-color: color(grayDark);
+    outline-offset: 2px;
+    outline-style: groove;
+    outline-width: 1.8px;
+  }
+}

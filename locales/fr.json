@@ -1,0 +1,31 @@
+{
+  "LOGO": "Le chapitre perdu",
+  "TITLE": "Bienvenue sur notre site !",
+  "TITLE_ABOUT": "À propos de nous",
+  "NOT_FOUND": "Page personnalisée introuvable",
+ 
+  "METADATA": {
+  "TITLE": "Localisation Next.js App Router i18n",
+  "ABOUT_TITLE": "À propos de nous"
+  },
+ 
+  "MENU": {
+    "HOME": "Maison",
+    "ABOUT": "à propos"
+  },
+  "Home_page":{
+    "TITLE": "Sélectionnez votre livre préféré"
+  },
+  "FORM_CONTENT" :{
+    "NAME":"Rechercher par nom",
+    "AUTHOR":"Recherche par auteu",
+    "CATEGORY":"Recherche par catégorie",
+    "DATE":"Recherche par date",
+    "LANGUAGE":"Recherche par langue",
+    "PRICE":"Recherche par prix",
+    "TO":"À",
+    "SEARCH":"Chercher",
+    "RESET":"Réinitialiser"
+  }
+}
+ 

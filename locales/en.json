@@ -1,0 +1,32 @@
+{
+  "LOGO":"The Lost Chapter",
+  "TITLE": "Welcome to our site!",
+  "TITLE_ABOUT": "About Us",
+  "NOT_FOUND": "Custom Not Found page",
+
+  "METADATA": {
+    "TITLE": "Next.js App Router i18n localization",
+    "ABOUT_TITLE": "About us"
+  },
+
+  "MENU": {
+    "HOME": "Home",
+    "ABOUT": "About"
+  },
+
+  "Home_page":{
+    "TITLE": "Select your favourite book"
+  },
+
+  "FORM_CONTENT" :{
+    "NAME":"Search By Name",
+    "AUTHOR":"Search By Author",
+    "CATEGORY":"Search By Category",
+    "DATE":"Search By Date",
+    "LANGUAGE":"Search By Language",
+    "PRICE":"Search By Price",
+    "TO":"T0",
+    "SEARCH":"Search",
+    "RESET":"Reset"
+  }
+}

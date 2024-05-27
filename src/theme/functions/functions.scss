@@ -1,0 +1,22 @@
+@import '../variables/variables';
+
+@function getVariableKey($obj, $key) {
+  @if map-has-key($obj, $key) {
+    @return map-get($obj, $key);
+  }
+
+  @warn "Unknown `#{$key}` in #{$obj}.";
+  @return null;
+}
+
+@function color($key) {
+  @return getVariableKey($colors, $key);
+}
+
+@function typography($key) {
+  @return getVariableKey($typography, $key);
+}
+
+@function spacing($key) {
+  @return getVariableKey($spacing, $key);
+}
