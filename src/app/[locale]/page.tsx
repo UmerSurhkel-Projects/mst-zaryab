@@ -62,10 +62,10 @@ const Home: React.FC<{}> = () => {
 	}
   };
   
-    // const token = localStorage.getItem('access_token');
-    // if (token) {
-    //   router.push('/books');
-    // }
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      router.push('/books');
+    }
 
   return (
     <main className="main flex items-center justify-center h-screen relative">
